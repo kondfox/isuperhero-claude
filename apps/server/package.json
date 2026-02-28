@@ -1,0 +1,22 @@
+{
+  "name": "@isuperhero/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "start": "bun dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@isuperhero/types": "workspace:*",
+    "colyseus": "^0.15.23"
+  },
+  "devDependencies": {
+    "@colyseus/testing": "^0.15.1",
+    "vitest": "^3.1.4"
+  }
+}

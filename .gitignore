@@ -1,0 +1,29 @@
+node_modules/
+dist/
+.turbo/
+.env
+.env.*
+!.env.example
+
+# Hetzner / Terraform secrets
+infra/.terraform/
+infra/**/*.tfstate
+infra/**/*.tfstate.backup
+infra/**/*.tfvars
+!infra/**/*.tfvars.example
+
+# Claude local settings
+.claude/settings.local.json
+
+# Build artifacts
+*.tsbuildinfo
+apps/web/dist/
+apps/server/dist/
+
+# Test output
+coverage/
+playwright-report/
+test-results/
+
+# OS
+.DS_Store

@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+# Validate gitmoji prefix in commit message
+COMMIT_MSG=$(cat "$1")
+
+# Gitmoji is a Unicode emoji — check for emoji at the start of the message
+# Matches any common emoji code point range or the literal emoji character
+if echo "$COMMIT_MSG" | grep -qP "^(\p{Emoji_Presentation}|\p{Extended_Pictographic})" 2>/dev/null; then
+  exit 0
+fi
+
+# Fallback: check for common gitmoji unicode sequences using printf
+# Accept if message starts with a multi-byte UTF-8 character (emoji)
+FIRST_CHAR=$(echo "$COMMIT_MSG" | cut -c1)
+BYTE=$(printf '%s' "$FIRST_CHAR" | wc -c | tr -d ' ')
+if [ "$BYTE" -gt 1 ]; then
+  exit 0
+fi
+
+echo ""
+echo "❌ Commit message must start with a gitmoji emoji."
+echo "   See https://gitmoji.dev/ for the full list."
+echo ""
+echo "   Examples:"
+echo "   ✨ feat: add game room creation"
+echo "   🐛 fix: player disconnect handling"
+echo "   ♻️  refactor: game state schema"
+echo "   ✅ test: add card draw mechanics"
+echo ""
+exit 1

@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+cd "$(git rev-parse --show-toplevel)"
+~/.bun/bin/bun run lint:fix
+~/.bun/bin/bun run test

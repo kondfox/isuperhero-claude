@@ -1,0 +1,58 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "deploy" to confirm production release'
+        required: true
+        type: string
+
+jobs:
+  validate:
+    name: Validate confirmation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check confirmation input
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "deploy" ]; then
+            echo "❌ Confirmation not provided. Type 'deploy' to proceed."
+            exit 1
+          fi
+
+  promote:
+    name: Promote stage image to prod
+    runs-on: ubuntu-latest
+    needs: validate
+    environment: prod
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Re-tag stage image as prod
+        run: |
+          docker pull ghcr.io/${{ github.repository }}:stage
+          docker tag ghcr.io/${{ github.repository }}:stage ghcr.io/${{ github.repository }}:prod
+          docker push ghcr.io/${{ github.repository }}:prod
+
+      - name: Deploy to Prod Server
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_SERVER_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY_PROD }}
+          script: |
+            docker pull ghcr.io/${{ github.repository }}:prod
+            docker compose -f /opt/isuperhero/docker-compose.yml up -d --no-build
+            docker system prune -f
+
+      - name: Tag release commit
+        run: |
+          git tag "release-$(date +%Y%m%d-%H%M%S)"
+          git push --tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
