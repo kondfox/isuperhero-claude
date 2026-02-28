@@ -17,8 +17,8 @@ infra/**/*.tfvars
 
 # Build artifacts
 *.tsbuildinfo
-apps/web/dist/
-apps/server/dist/
+*.d.ts.map
+dist/
 
 # Test output
 coverage/
