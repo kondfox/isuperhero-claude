@@ -4,9 +4,9 @@ variable "env" {
 }
 
 variable "server_type" {
-  description = "Hetzner server type (e.g. cx22, ccx13)"
+  description = "Hetzner server type (e.g. cx23, ccx13)"
   type        = string
-  default     = "cx22"
+  default     = "cx23"
 }
 
 variable "location" {

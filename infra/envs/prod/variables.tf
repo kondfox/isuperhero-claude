@@ -10,9 +10,9 @@ variable "ssh_key_name" {
 }
 
 variable "server_type" {
-  description = "Hetzner server type — cx22 during dev, upgrade to ccx13 at launch"
+  description = "Hetzner server type — cx23 during dev, upgrade to ccx13 at launch"
   type        = string
-  default     = "cx22"
+  default     = "cx23"
 }
 
 variable "ssh_allowed_ips" {

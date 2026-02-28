@@ -24,7 +24,7 @@ module "server" {
   source = "../../modules/server"
 
   env            = "stage"
-  server_type    = "cx22"
+  server_type    = "cx23"
   location       = "nbg1"
   ssh_key_name   = var.ssh_key_name
   volume_size_gb = 20
