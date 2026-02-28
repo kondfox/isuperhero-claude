@@ -1,5 +1,10 @@
-// Game logic implementation will be added in the next planning session
-// after the game rulebook has been reviewed.
-// All game rules live here — pure TypeScript, no IO, no network.
-
-export {};
+export * from "./constants";
+export * from "./validators";
+export * from "./event-log";
+export * from "./create-game";
+export * from "./ability";
+export * from "./dice";
+export * from "./battle";
+export * from "./cosmos";
+export * from "./turn";
+export * from "./win-condition";
