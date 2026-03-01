@@ -30,7 +30,7 @@ infra/
 ## Prerequisites
 
 - [Bun](https://bun.sh/) (latest)
-- PostgreSQL 15+
+- [Docker](https://www.docker.com/) (for local PostgreSQL)
 - Node.js 20+ (required by Playwright for E2E tests)
 
 ## Getting Started
@@ -44,6 +44,9 @@ bun install
 # Environment variables
 cp .env.example .env
 # Edit .env with your values (at minimum, set DATABASE_URL)
+
+# Start local PostgreSQL (port 5433 to avoid conflicts)
+docker compose up -d
 
 # Set up the database
 bun run --filter @isuperhero/server db:migrate
@@ -78,24 +81,25 @@ Run from the project root:
 
 ## Database
 
-### Initial Setup
+### Local PostgreSQL
 
-Create a PostgreSQL database:
+The project includes a `docker-compose.yml` that runs PostgreSQL 16 on port **5433** (to avoid conflicts with a local PostgreSQL on 5432):
 
-```sql
-CREATE USER isuperhero WITH PASSWORD 'password';
-CREATE DATABASE isuperhero_dev OWNER isuperhero;
+```bash
+docker compose up -d      # Start
+docker compose down        # Stop
+docker compose down -v     # Stop and delete data
 ```
 
-Set `DATABASE_URL` in your `.env`:
+The default connection string is already set in `.env.example`:
 
 ```
-DATABASE_URL=postgresql://isuperhero:password@localhost:5432/isuperhero_dev
+DATABASE_URL=postgresql://isuperhero:password@localhost:5433/isuperhero_dev
 ```
 
 ### Migrations
 
-Drizzle manages schema migrations in `apps/server/db/migrations/`. After changing the schema in `apps/server/src/db/schema.ts`:
+Drizzle manages schema migrations in `apps/server/drizzle/`. After changing the schema in `apps/server/src/db/schema.ts`:
 
 ```bash
 bun run --filter @isuperhero/server db:generate   # Generate migration SQL
