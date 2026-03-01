@@ -58,11 +58,7 @@ function syncTask(source: TaskDefinition): TaskSchema {
   schema.id = source.id
   schema.abilityName = source.abilityName
   schema.taskNumber = source.taskNumber
-  schema.titleRu = source.title.ru ?? ''
-  schema.titleEn = source.title.en ?? ''
   schema.rewards = new ArraySchema<string>(...source.rewards)
-  schema.requirementsRu = source.requirements?.ru ?? ''
-  schema.requirementsEn = source.requirements?.en ?? ''
   schema.taskType = source.taskType
   return schema
 }
