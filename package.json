@@ -11,7 +11,11 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:generate": "bun run --env-file .env --filter @isuperhero/server db:generate",
+    "db:migrate": "bun run --env-file .env --filter @isuperhero/server db:migrate",
+    "db:seed": "bun run --env-file .env --filter @isuperhero/server db:seed",
+    "db:studio": "bun run --env-file .env --filter @isuperhero/server db:studio"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
