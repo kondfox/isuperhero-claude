@@ -8,7 +8,6 @@ import {
   MIN_ABILITY_SCORE,
   MIN_PLAYERS,
   MONSTERS_TO_WIN,
-  RELATED_ABILITIES,
 } from './constants'
 
 describe('constants', () => {
@@ -37,26 +36,5 @@ describe('constants', () => {
     expect(ALL_ABILITIES).toContain(AbilityName.Orientation)
     expect(ALL_ABILITIES).toContain(AbilityName.Processing)
     expect(ALL_ABILITIES).toContain(AbilityName.MovementEnergy)
-  })
-
-  it('defines related abilities for every ability', () => {
-    for (const ability of ALL_ABILITIES) {
-      expect(RELATED_ABILITIES[ability]).toBeDefined()
-      expect(RELATED_ABILITIES[ability].length).toBeGreaterThanOrEqual(1)
-    }
-  })
-
-  it('never includes self in related abilities', () => {
-    for (const ability of ALL_ABILITIES) {
-      expect(RELATED_ABILITIES[ability]).not.toContain(ability)
-    }
-  })
-
-  it('only references valid abilities in related map', () => {
-    for (const ability of ALL_ABILITIES) {
-      for (const related of RELATED_ABILITIES[ability]) {
-        expect(ALL_ABILITIES).toContain(related)
-      }
-    }
   })
 })

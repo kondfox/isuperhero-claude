@@ -1,11 +1,6 @@
 import { AbilityName, DifficultyLevel } from '@isuperhero/types'
 import { describe, expect, it } from 'vitest'
-import {
-  applyTaskSuccess,
-  decreaseAbility,
-  getValidRelatedAbilities,
-  increaseAbility,
-} from './ability'
+import { applyTaskRewards, decreaseAbility, increaseAbility } from './ability'
 import { MAX_ABILITY_SCORE } from './constants'
 import { createPlayer } from './create-game'
 
@@ -76,44 +71,12 @@ describe('decreaseAbility', () => {
   })
 })
 
-describe('getValidRelatedAbilities', () => {
-  it('returns related abilities that are not maxed', () => {
+describe('applyTaskRewards', () => {
+  it('increases all reward abilities by 1', () => {
     const player = makePlayer()
-    const result = getValidRelatedAbilities(player, AbilityName.Management)
-    expect(result).toContain(AbilityName.Processing)
-    expect(result).toContain(AbilityName.Communication)
-  })
-
-  it('excludes maxed abilities', () => {
-    const player = makePlayer({ [AbilityName.Processing]: MAX_ABILITY_SCORE })
-    const result = getValidRelatedAbilities(player, AbilityName.Management)
-    expect(result).not.toContain(AbilityName.Processing)
-    expect(result).toContain(AbilityName.Communication)
-  })
-
-  it('returns empty array when all related are maxed', () => {
-    const player = makePlayer({
-      [AbilityName.Processing]: MAX_ABILITY_SCORE,
-      [AbilityName.Communication]: MAX_ABILITY_SCORE,
-    })
-    const result = getValidRelatedAbilities(player, AbilityName.Management)
-    expect(result).toEqual([])
-  })
-})
-
-describe('applyTaskSuccess', () => {
-  it('increases both primary and related ability', () => {
-    const player = makePlayer()
-    const result = applyTaskSuccess(player, AbilityName.Management, AbilityName.Processing)
+    const result = applyTaskRewards(player, [AbilityName.Management, AbilityName.Processing])
     expect(result.abilities[AbilityName.Management]).toBe(1)
     expect(result.abilities[AbilityName.Processing]).toBe(1)
-  })
-
-  it('throws for invalid related ability', () => {
-    const player = makePlayer()
-    expect(() =>
-      applyTaskSuccess(player, AbilityName.Management, AbilityName.MovementEnergy),
-    ).toThrow('not a valid related ability')
   })
 
   it('clamps each ability independently', () => {
@@ -121,8 +84,35 @@ describe('applyTaskSuccess', () => {
       [AbilityName.Management]: MAX_ABILITY_SCORE,
       [AbilityName.Processing]: 4,
     })
-    const result = applyTaskSuccess(player, AbilityName.Management, AbilityName.Processing)
+    const result = applyTaskRewards(player, [AbilityName.Management, AbilityName.Processing])
     expect(result.abilities[AbilityName.Management]).toBe(MAX_ABILITY_SCORE)
     expect(result.abilities[AbilityName.Processing]).toBe(MAX_ABILITY_SCORE)
+  })
+
+  it('does not affect unrewarded abilities', () => {
+    const player = makePlayer()
+    const result = applyTaskRewards(player, [AbilityName.Management, AbilityName.Processing])
+    expect(result.abilities[AbilityName.Communication]).toBe(0)
+    expect(result.abilities[AbilityName.Orientation]).toBe(0)
+    expect(result.abilities[AbilityName.MovementEnergy]).toBe(0)
+  })
+
+  it('does not mutate original player', () => {
+    const player = makePlayer()
+    applyTaskRewards(player, [AbilityName.Management, AbilityName.Processing])
+    expect(player.abilities[AbilityName.Management]).toBe(0)
+    expect(player.abilities[AbilityName.Processing]).toBe(0)
+  })
+
+  it('handles empty rewards array', () => {
+    const player = makePlayer({ [AbilityName.Management]: 2 })
+    const result = applyTaskRewards(player, [])
+    expect(result.abilities[AbilityName.Management]).toBe(2)
+  })
+
+  it('handles single reward', () => {
+    const player = makePlayer()
+    const result = applyTaskRewards(player, [AbilityName.Orientation])
+    expect(result.abilities[AbilityName.Orientation]).toBe(1)
   })
 })

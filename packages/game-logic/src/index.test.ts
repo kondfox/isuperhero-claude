@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   ALL_ABILITIES,
   MAX_ABILITY_SCORE,
+  applyTaskRewards,
   checkWinCondition,
   createGameEvent,
   createGameState,
@@ -57,5 +58,6 @@ describe('game-logic public API', () => {
 
   it('exports ability functions', () => {
     expect(typeof increaseAbility).toBe('function')
+    expect(typeof applyTaskRewards).toBe('function')
   })
 })

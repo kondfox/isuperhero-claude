@@ -1,5 +1,5 @@
 import type { AbilityName, PlayerState } from '@isuperhero/types'
-import { MAX_ABILITY_SCORE, MIN_ABILITY_SCORE, RELATED_ABILITIES } from './constants'
+import { MAX_ABILITY_SCORE, MIN_ABILITY_SCORE } from './constants'
 
 export function increaseAbility(
   player: PlayerState,
@@ -27,25 +27,10 @@ export function decreaseAbility(
   }
 }
 
-export function getValidRelatedAbilities(
-  player: PlayerState,
-  primaryAbility: AbilityName,
-): AbilityName[] {
-  return RELATED_ABILITIES[primaryAbility].filter(
-    (ability) => player.abilities[ability] < MAX_ABILITY_SCORE,
-  )
-}
-
-export function applyTaskSuccess(
-  player: PlayerState,
-  primaryAbility: AbilityName,
-  relatedAbility: AbilityName,
-): PlayerState {
-  const validRelated = RELATED_ABILITIES[primaryAbility]
-  if (!validRelated.includes(relatedAbility)) {
-    throw new Error(`${relatedAbility} is not a valid related ability for ${primaryAbility}`)
+export function applyTaskRewards(player: PlayerState, rewards: AbilityName[]): PlayerState {
+  let result = player
+  for (const ability of rewards) {
+    result = increaseAbility(result, ability)
   }
-  let result = increaseAbility(player, primaryAbility)
-  result = increaseAbility(result, relatedAbility)
   return result
 }
