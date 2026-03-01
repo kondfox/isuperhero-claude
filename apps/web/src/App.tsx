@@ -3,9 +3,9 @@
 
 export default function App() {
   return (
-    <main style={{ fontFamily: "sans-serif", textAlign: "center", paddingTop: "4rem" }}>
+    <main style={{ fontFamily: 'sans-serif', textAlign: 'center', paddingTop: '4rem' }}>
       <h1>iSuperhero Online</h1>
       <p>Coming soon. Game UI design is in progress.</p>
     </main>
-  );
+  )
 }
