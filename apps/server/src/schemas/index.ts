@@ -27,12 +27,7 @@ export class TaskSchema extends Schema {
   @type('string') id = ''
   @type('string') abilityName = ''
   @type('uint8') taskNumber = 0
-  @type('string') titleRu = ''
-  @type('string') titleEn = ''
   @type(['string']) rewards = new ArraySchema<string>()
-  @type('string') requirementsRu = ''
-  @type('string') requirementsEn = ''
-  @type('string') contentHtml = ''
   @type('string') taskType = ''
 }
 

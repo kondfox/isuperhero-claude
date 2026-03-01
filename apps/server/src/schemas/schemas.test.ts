@@ -77,7 +77,6 @@ describe('TaskSchema', () => {
     task.abilityName = AbilityName.Management
     task.taskNumber = 1
     task.taskType = TaskType.Digital
-    task.titleRu = 'Взломай код'
     task.rewards = new ArraySchema<string>()
     task.rewards.push(AbilityName.Management, AbilityName.Processing)
     expect(task.id).toBe('management-1')
