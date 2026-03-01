@@ -6,6 +6,12 @@ export default defineConfig({
       'packages/game-logic/vitest.config.ts',
       {
         test: {
+          name: 'game-data',
+          root: './packages/game-data',
+        },
+      },
+      {
+        test: {
           name: 'web',
           root: './apps/web',
           exclude: ['e2e/**', 'node_modules/**'],

@@ -6,6 +6,6 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "references": [{ "path": "../../packages/types" }],
+  "references": [{ "path": "../../packages/types" }, { "path": "../../packages/game-data" }],
   "include": ["src"]
 }
