@@ -8,7 +8,10 @@ An online real-time multiplayer version of the [iSuperhero](http://isuperhero.ru
 - **Frontend**: React 19 + Vite 6 + TypeScript
 - **Game Server**: [Colyseus](https://colyseus.io/) 0.15 (real-time multiplayer)
 - **Database**: PostgreSQL + [Drizzle ORM](https://orm.drizzle.team/)
+- **Routing**: [React Router](https://reactrouter.com/) v7
+- **UI Components**: [Radix Primitives](https://www.radix-ui.com/) + CSS Modules
 - **Code Quality**: [Biome](https://biomejs.dev/) (lint + format), [Vitest](https://vitest.dev/) (unit tests), [Playwright](https://playwright.dev/) (E2E)
+- **Component Dev**: [Storybook](https://storybook.js.org/) 10
 - **Infrastructure**: Hetzner Cloud, Terraform, Docker
 
 ## Project Structure
@@ -49,8 +52,8 @@ cp .env.example .env
 docker compose up -d
 
 # Set up the database
-bun run --filter @isuperhero/server db:migrate
-bun run --filter @isuperhero/server db:seed
+bun run db:migrate
+bun run db:seed
 
 # Start development
 bun run dev
@@ -69,15 +72,16 @@ Run from the project root:
 | `bun run typecheck` | TypeScript check across all workspaces |
 | `bun run lint:fix` | Format + lint all files (Biome) |
 | `bun run build` | Build all apps for production |
+| `bun run storybook` | Start Storybook on port 6006 |
 
-### Server-specific
+### Database
 
 | Command | Description |
 |---|---|
-| `bun run --filter @isuperhero/server db:generate` | Generate Drizzle migrations |
-| `bun run --filter @isuperhero/server db:migrate` | Apply database migrations |
-| `bun run --filter @isuperhero/server db:seed` | Seed game data into the database |
-| `bun run --filter @isuperhero/server db:studio` | Open Drizzle Studio (DB browser) |
+| `bun run db:migrate` | Apply database migrations |
+| `bun run db:seed` | Seed game data into the database |
+| `bun run db:generate` | Generate Drizzle migrations |
+| `bun run db:studio` | Open Drizzle Studio (DB browser) |
 
 ## Database
 
@@ -102,8 +106,8 @@ DATABASE_URL=postgresql://isuperhero:password@localhost:5433/isuperhero_dev
 Drizzle manages schema migrations in `apps/server/drizzle/`. After changing the schema in `apps/server/src/db/schema.ts`:
 
 ```bash
-bun run --filter @isuperhero/server db:generate   # Generate migration SQL
-bun run --filter @isuperhero/server db:migrate     # Apply to database
+bun run db:generate   # Generate migration SQL
+bun run db:migrate    # Apply to database
 ```
 
 Never edit migrations that have already been applied.
@@ -113,7 +117,7 @@ Never edit migrations that have already been applied.
 The seed script loads game data (tasks, monsters, bonus cards) from the `@isuperhero/game-data` package into PostgreSQL:
 
 ```bash
-bun run --filter @isuperhero/server db:seed
+bun run db:seed
 ```
 
 Task descriptions are private content — the source file (`packages/game-data/src/tasks-data.ts`) is git-ignored and not included in the repository. In production, tasks are served from the database.
