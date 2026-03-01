@@ -1,0 +1,202 @@
+{
+  "id": "c6dbe3b3-3ae7-4338-a10a-ef520070184b",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.bonus_cards": {
+      "name": "bonus_cards",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(64)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "effect_type": {
+          "name": "effect_type",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_url": {
+          "name": "image_url",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "deck_count": {
+          "name": "deck_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.monsters": {
+      "name": "monsters",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(64)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "management": {
+          "name": "management",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "communication": {
+          "name": "communication",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "orientation": {
+          "name": "orientation",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "processing": {
+          "name": "processing",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "movement_energy": {
+          "name": "movement_energy",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "image_url": {
+          "name": "image_url",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.tasks": {
+      "name": "tasks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(64)",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "ability_name": {
+          "name": "ability_name",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "task_number": {
+          "name": "task_number",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rewards": {
+          "name": "rewards",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requirements": {
+          "name": "requirements",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "levels": {
+          "name": "levels",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_refs": {
+          "name": "image_refs",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "task_type": {
+          "name": "task_type",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

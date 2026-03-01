@@ -10,6 +10,20 @@ jobs:
   test:
     name: Test & Typecheck
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: isuperhero
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: isuperhero_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U isuperhero"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -28,6 +42,16 @@ jobs:
 
       - name: Run unit tests
         run: bun run test
+
+      - name: Run DB migrations
+        run: cd apps/server && bun run db:migrate
+        env:
+          DATABASE_URL: postgresql://isuperhero:password@localhost:5432/isuperhero_test
+
+      - name: Seed database
+        run: cd apps/server && bun run db:seed
+        env:
+          DATABASE_URL: postgresql://isuperhero:password@localhost:5432/isuperhero_test
 
   playwright:
     name: E2E Tests
