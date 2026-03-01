@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router'
+import { RoomProvider } from './context/RoomContext'
 import { router } from './router'
 import './styles/tokens.css'
 import './styles/reset.css'
@@ -10,6 +11,8 @@ if (!root) throw new Error('Root element not found')
 
 createRoot(root).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <RoomProvider>
+      <RouterProvider router={router} />
+    </RoomProvider>
   </StrictMode>,
 )
