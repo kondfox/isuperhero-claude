@@ -28,7 +28,6 @@ export enum TurnPhase {
   ChoosingAbility = 'choosingAbility',
   RollingDie = 'rollingDie',
   CompletingTask = 'completingTask',
-  ChoosingRelatedAbility = 'choosingRelatedAbility',
   DrawingCard = 'drawingCard',
   MonsterBattle = 'monsterBattle',
   BattleDefeatPenalty = 'battleDefeatPenalty',
@@ -109,12 +108,13 @@ export interface BonusCard {
 export interface TaskDefinition {
   id: string
   abilityName: AbilityName
-  difficultyLevel: DifficultyLevel
   taskNumber: number
-  title: string
-  instructions: string
+  title: Record<string, string>
+  rewards: AbilityName[]
+  requirements?: Record<string, string>
+  levels: Record<string, Record<string, string>>
+  imageRefs?: string[]
   taskType: TaskType
-  mediaUrl?: string
 }
 
 export interface DieRollResult {
@@ -196,11 +196,6 @@ export interface TaskCompleteMessage {
   success: boolean
 }
 
-export interface ChooseRelatedAbilityMessage {
-  type: 'chooseRelatedAbility'
-  ability: AbilityName
-}
-
 export interface BattleDefeatPenaltyMessage {
   type: 'battleDefeatPenalty'
   ability: AbilityName
@@ -220,7 +215,6 @@ export type GameMessage =
   | ChooseAbilityMessage
   | RollDieMessage
   | TaskCompleteMessage
-  | ChooseRelatedAbilityMessage
   | BattleDefeatPenaltyMessage
   | PlayerReadyMessage
   | StartGameMessage

@@ -4,7 +4,6 @@ import {
   type BonusCard,
   CardType,
   type DieRollResult,
-  GamePhase,
   type GameState,
   type MonsterCard,
   type PlayerId,
@@ -13,7 +12,7 @@ import {
   TurnPhase,
   type TurnState,
 } from '@isuperhero/types'
-import { applyTaskSuccess } from './ability'
+import { applyTaskRewards } from './ability'
 import { applyBattleDefeat, applyBattleVictory } from './battle'
 
 export function createTurn(activePlayerId: PlayerId): TurnState {
@@ -112,20 +111,10 @@ export function applyTaskComplete(state: GameState, success: boolean): GameState
     }
   }
 
-  return {
-    ...state,
-    turn: { ...turn, phase: TurnPhase.ChoosingRelatedAbility },
-  }
-}
-
-export function applyChooseRelatedAbility(
-  state: GameState,
-  relatedAbility: AbilityName,
-): GameState {
-  const turn = assertPhase(state, TurnPhase.ChoosingRelatedAbility)
-  const primaryAbility = turn.chosenAbility
-  if (!primaryAbility) {
-    throw new Error('No primary ability chosen')
+  // Auto-apply rewards from task
+  const task = turn.currentTask
+  if (!task) {
+    throw new Error('No task in current turn')
   }
 
   const player = state.players.find((p) => p.id === turn.activePlayerId)
@@ -133,7 +122,7 @@ export function applyChooseRelatedAbility(
     throw new Error('Active player not found')
   }
 
-  const updatedPlayer = applyTaskSuccess(player, primaryAbility, relatedAbility)
+  const updatedPlayer = applyTaskRewards(player, task.rewards)
 
   return {
     ...state,

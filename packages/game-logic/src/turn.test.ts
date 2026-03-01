@@ -19,7 +19,6 @@ import {
   applyBattleOutcome,
   applyChooseAbility,
   applyChooseAction,
-  applyChooseRelatedAbility,
   applyDieRoll,
   applyDrawCard,
   applyTaskComplete,
@@ -59,11 +58,15 @@ const testBonus: BonusCard = {
 const testTask = {
   id: 't1',
   abilityName: AbilityName.Management,
-  difficultyLevel: DifficultyLevel.Level1,
   taskNumber: 5,
-  title: 'Test Task',
-  instructions: 'Do something',
-  taskType: TaskType.Digital,
+  title: { ru: 'Тест', en: 'Test Task' },
+  rewards: [AbilityName.Management, AbilityName.Processing],
+  levels: {
+    '1': { ru: '<p>Сделай что-нибудь</p>', en: '<p>Do something</p>' },
+    '2': { ru: '<p>Сделай что-нибудь</p>', en: '<p>Do something</p>' },
+    '3': { ru: '<p>Сделай что-нибудь</p>', en: '<p>Do something</p>' },
+  },
+  taskType: TaskType.NonDigital,
 }
 
 function makeGameInProgress(): GameState {
@@ -107,7 +110,6 @@ describe('advanceToNextPlayer', () => {
     const state = makeGameInProgress()
     state.players[1] = { ...state.players[1], connected: false }
     const result = advanceToNextPlayer(state)
-    // p2 is disconnected, should wrap to p1
     expect(result.turn?.activePlayerId).toBe('p1')
   })
 
@@ -115,7 +117,6 @@ describe('advanceToNextPlayer', () => {
     const state = makeGameInProgress()
     state.players = state.players.map((p) => ({ ...p, connected: false }))
     const result = advanceToNextPlayer(state)
-    // Should still return a valid state (falls back to next index)
     expect(result.turn).not.toBeNull()
   })
 
@@ -192,61 +193,36 @@ describe('applyTaskComplete', () => {
     return state
   }
 
-  it('transitions to ChoosingRelatedAbility on success', () => {
+  it('auto-applies rewards and transitions to TurnComplete on success', () => {
     const result = applyTaskComplete(stateAtCompletingTask(), true)
-    expect(result.turn?.phase).toBe(TurnPhase.ChoosingRelatedAbility)
-  })
-
-  it('transitions to TurnComplete on failure', () => {
-    const result = applyTaskComplete(stateAtCompletingTask(), false)
-    expect(result.turn?.phase).toBe(TurnPhase.TurnComplete)
-  })
-})
-
-describe('applyChooseRelatedAbility', () => {
-  function stateAtChoosingRelated() {
-    let state = makeGameInProgress()
-    state = applyChooseAction(state, TurnAction.DevelopAbility)
-    state = applyChooseAbility(state, AbilityName.Management)
-    state = applyDieRoll(state, { taskNumber: 5, wasRerolled: false, rerollCount: 0 }, testTask)
-    state = applyTaskComplete(state, true)
-    return state
-  }
-
-  it('increases both abilities and completes turn', () => {
-    const state = stateAtChoosingRelated()
-    const result = applyChooseRelatedAbility(state, AbilityName.Processing)
     expect(result.turn?.phase).toBe(TurnPhase.TurnComplete)
     const player = result.players.find((p) => p.id === 'p1')!
     expect(player.abilities[AbilityName.Management]).toBe(1)
     expect(player.abilities[AbilityName.Processing]).toBe(1)
+    expect(player.abilities[AbilityName.Communication]).toBe(0)
   })
 
-  it('throws for invalid related ability', () => {
-    const state = stateAtChoosingRelated()
-    expect(() => applyChooseRelatedAbility(state, AbilityName.MovementEnergy)).toThrow(
-      'not a valid related ability',
-    )
+  it('transitions to TurnComplete on failure without rewards', () => {
+    const result = applyTaskComplete(stateAtCompletingTask(), false)
+    expect(result.turn?.phase).toBe(TurnPhase.TurnComplete)
+    const player = result.players.find((p) => p.id === 'p1')!
+    expect(player.abilities[AbilityName.Management]).toBe(0)
+    expect(player.abilities[AbilityName.Processing]).toBe(0)
   })
 
   it('throws when active player not found', () => {
-    const state = stateAtChoosingRelated()
+    const state = stateAtCompletingTask()
     const broken = { ...state, players: [] }
-    expect(() => applyChooseRelatedAbility(broken, AbilityName.Processing)).toThrow(
-      'Active player not found',
-    )
+    expect(() => applyTaskComplete(broken, true)).toThrow('Active player not found')
   })
 
-  it('throws when no primary ability was chosen', () => {
-    const state = stateAtChoosingRelated()
-    // Remove chosenAbility from turn state
+  it('throws when no task in current turn', () => {
+    const state = stateAtCompletingTask()
     const broken = {
       ...state,
-      turn: { ...state.turn!, chosenAbility: undefined },
+      turn: { ...state.turn!, currentTask: undefined },
     }
-    expect(() => applyChooseRelatedAbility(broken, AbilityName.Processing)).toThrow(
-      'No primary ability chosen',
-    )
+    expect(() => applyTaskComplete(broken, true)).toThrow('No task in current turn')
   })
 })
 
@@ -286,7 +262,6 @@ describe('applyDrawCard — Monster', () => {
 describe('applyBattleOutcome — Victory', () => {
   function stateAtBattle() {
     let state = makeGameInProgress()
-    // Give player high abilities to win
     state.players[0] = {
       ...state.players[0],
       abilities: {
@@ -379,7 +354,6 @@ describe('applyBattleDefeatPenalty', () => {
 
   it('throws when active player not found', () => {
     const state = stateAtPenalty()
-    // Remove all players to trigger "Active player not found"
     const broken = { ...state, players: [] }
     expect(() => applyBattleDefeatPenalty(broken, AbilityName.Management)).toThrow(
       'Active player not found',

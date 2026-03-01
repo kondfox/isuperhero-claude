@@ -14,11 +14,3 @@ export const ALL_ABILITIES: readonly AbilityName[] = [
   AbilityName.Processing,
   AbilityName.MovementEnergy,
 ] as const
-
-export const RELATED_ABILITIES: Record<AbilityName, readonly AbilityName[]> = {
-  [AbilityName.Management]: [AbilityName.Processing, AbilityName.Communication],
-  [AbilityName.Communication]: [AbilityName.Management, AbilityName.Orientation],
-  [AbilityName.Orientation]: [AbilityName.MovementEnergy, AbilityName.Processing],
-  [AbilityName.Processing]: [AbilityName.Management, AbilityName.Orientation],
-  [AbilityName.MovementEnergy]: [AbilityName.Orientation, AbilityName.Processing],
-}
