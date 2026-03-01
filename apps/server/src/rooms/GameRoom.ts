@@ -24,6 +24,13 @@ import {
   shuffleDeck,
   startGame,
 } from '@isuperhero/game-logic'
+import type {
+  BonusCard,
+  GameState,
+  MonsterCard,
+  RoomSettings,
+  TaskDefinition,
+} from '@isuperhero/types'
 import {
   type AbilityName,
   CardType,
@@ -33,15 +40,8 @@ import {
   TurnAction,
   TurnPhase,
 } from '@isuperhero/types'
-import type {
-  BonusCard,
-  GameState,
-  MonsterCard,
-  RoomSettings,
-  TaskDefinition,
-} from '@isuperhero/types'
-import { Room } from 'colyseus'
 import type { Client } from 'colyseus'
+import { Room } from 'colyseus'
 import { GameStateSchema } from '../schemas/index'
 import { syncToSchema } from '../sync'
 

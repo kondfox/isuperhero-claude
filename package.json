@@ -1,7 +1,10 @@
 {
   "name": "isuperhero",
   "private": true,
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "bun run --filter='*' dev",
     "build": "bun run --filter='*' build",
@@ -21,10 +24,12 @@
     "storybook": "bun run --filter @isuperhero/web storybook"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.4.4",
     "husky": "^9.1.7",
     "typescript": "^5.7.3",
-    "vitest": "^3.1.4"
+    "vitest": "^4.0.18"
   },
-  "trustedDependencies": ["@biomejs/biome"]
+  "trustedDependencies": [
+    "@biomejs/biome"
+  ]
 }

@@ -10,7 +10,7 @@
  *   bun scripts/check-versions.ts --json       # JSON output (for Claude hook)
  */
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '..')

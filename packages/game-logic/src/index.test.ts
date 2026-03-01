@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
   ALL_ABILITIES,
-  MAX_ABILITY_SCORE,
   applyTaskRewards,
   checkWinCondition,
   createGameEvent,
@@ -11,6 +10,7 @@ import {
   drawCard,
   increaseAbility,
   isActivePlayer,
+  MAX_ABILITY_SCORE,
   resolveBattle,
   rollDie,
   shuffleDeck,

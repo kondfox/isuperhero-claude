@@ -1,14 +1,4 @@
 import { createInitialAbilities } from '@isuperhero/game-logic'
-import {
-  AbilityName,
-  CardType,
-  DifficultyLevel,
-  GameEventType,
-  GamePhase,
-  TaskType,
-  TurnAction,
-  TurnPhase,
-} from '@isuperhero/types'
 import type {
   BattleResult,
   BonusCard,
@@ -19,6 +9,16 @@ import type {
   RoomSettings,
   TaskDefinition,
   TurnState,
+} from '@isuperhero/types'
+import {
+  AbilityName,
+  CardType,
+  DifficultyLevel,
+  GameEventType,
+  GamePhase,
+  TaskType,
+  TurnAction,
+  TurnPhase,
 } from '@isuperhero/types'
 import { describe, expect, it } from 'vitest'
 import { GameStateSchema } from './schemas/index'

@@ -4,8 +4,8 @@ import type { Room } from 'colyseus.js'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import { RoomContext } from '../context/RoomContext'
-import { AbilityName, DifficultyLevel } from '../types/game-state'
 import type { GameSnapshot } from '../types/game-state'
+import { AbilityName, DifficultyLevel } from '../types/game-state'
 import { LobbyPage } from './LobbyPage'
 
 const emptyAbilities = {

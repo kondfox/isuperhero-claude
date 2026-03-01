@@ -1,4 +1,4 @@
-import { ArraySchema, MapSchema, Schema, defineTypes } from '@colyseus/schema'
+import { ArraySchema, defineTypes, MapSchema, Schema } from '@colyseus/schema'
 
 /**
  * All schema classes use `declare` for typed fields instead of class field

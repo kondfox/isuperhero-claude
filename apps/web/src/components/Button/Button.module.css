@@ -8,8 +8,10 @@
   font-weight: var(--font-weight-bold);
   line-height: 1;
   border-radius: var(--radius-md);
-  transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform
-    var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
   cursor: pointer;
   user-select: none;
 }
