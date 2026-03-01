@@ -29,6 +29,7 @@ import {
   CardType,
   DifficultyLevel,
   GamePhase,
+  TaskType,
   TurnAction,
   TurnPhase,
 } from '@isuperhero/types'
@@ -79,6 +80,22 @@ function buildTaskIndex(tasks: TaskDefinition[]): Map<string, TaskDefinition> {
     index.set(key, task)
   }
   return index
+}
+
+function createFallbackTask(ability: AbilityName, taskNumber: number): TaskDefinition {
+  return {
+    id: `${ability}-${taskNumber}`,
+    abilityName: ability,
+    taskNumber,
+    title: { ru: `Задание ${taskNumber}`, en: `Task ${taskNumber}` },
+    rewards: [ability],
+    levels: {
+      '1': { ru: '<p>Задание недоступно</p>', en: '<p>Task unavailable</p>' },
+      '2': { ru: '<p>Задание недоступно</p>', en: '<p>Task unavailable</p>' },
+      '3': { ru: '<p>Задание недоступно</p>', en: '<p>Task unavailable</p>' },
+    },
+    taskType: TaskType.NonDigital,
+  }
 }
 
 export class GameRoom extends Room<GameStateSchema> {
@@ -233,12 +250,9 @@ export class GameRoom extends Room<GameStateSchema> {
         rollResult.taskNumber,
       )
 
-      // Look up the task
+      // Look up the task, fall back to generic if not in index (e.g. CI, no task data)
       const taskKey = `${ability}-${rollResult.taskNumber}`
-      const task = this.taskIndex.get(taskKey)
-      if (!task) {
-        throw new Error(`Task not found: ${taskKey}`)
-      }
+      const task = this.taskIndex.get(taskKey) ?? createFallbackTask(ability, rollResult.taskNumber)
 
       this.gameState = applyDieRoll(this.gameState, rollResult, task)
       this.sync()
