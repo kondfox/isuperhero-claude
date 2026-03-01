@@ -9,13 +9,14 @@ An online real-time multiplayer version of the iSuperhero board game.
 - **Game server**: Colyseus (real-time multiplayer, Bun)
 - **Database**: PostgreSQL + Drizzle ORM
 - **Linting/formatting**: Biome (`bun run lint:fix` for both)
-- **Testing**: Vitest (unit), Playwright (E2E via MCP)
+- **Testing**: Vitest (unit), Playwright + playwright-bdd (E2E, Cucumber/Gherkin)
 
 ## Commands
 
 ```bash
 bun run dev          # Start all apps (web + server)
 bun run test         # Run all unit/integration tests across workspaces (Vitest)
+bun run test:e2e     # Run E2E tests (requires `bun run dev` running)
 bun run lint:fix     # Format + lint all files (Biome)
 bun run typecheck    # TypeScript check across all workspaces
 bun run build        # Build all apps for production

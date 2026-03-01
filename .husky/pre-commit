@@ -3,3 +3,4 @@ cd "$(git rev-parse --show-toplevel)"
 ~/.bun/bin/bun run lint:fix
 ~/.bun/bin/bun run typecheck
 ~/.bun/bin/bun run test
+~/.bun/bin/bun run test:e2e
