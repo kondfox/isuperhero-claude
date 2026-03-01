@@ -1,100 +1,187 @@
-import { ArraySchema, MapSchema, Schema, type } from '@colyseus/schema'
+import { ArraySchema, MapSchema, Schema, defineTypes } from '@colyseus/schema'
 
 export class AbilityScoresSchema extends Schema {
-  @type('uint8') management = 0
-  @type('uint8') communication = 0
-  @type('uint8') orientation = 0
-  @type('uint8') processing = 0
-  @type('uint8') movementEnergy = 0
+  management = 0
+  communication = 0
+  orientation = 0
+  processing = 0
+  movementEnergy = 0
 }
+defineTypes(AbilityScoresSchema, {
+  management: 'uint8',
+  communication: 'uint8',
+  orientation: 'uint8',
+  processing: 'uint8',
+  movementEnergy: 'uint8',
+})
 
 export class MonsterCardSchema extends Schema {
-  @type('string') id = ''
-  @type('string') name = ''
-  @type(AbilityScoresSchema) abilities = new AbilityScoresSchema()
-  @type('string') imageUrl = ''
+  id = ''
+  name = ''
+  abilities = new AbilityScoresSchema()
+  imageUrl = ''
 }
+defineTypes(MonsterCardSchema, {
+  id: 'string',
+  name: 'string',
+  abilities: AbilityScoresSchema,
+  imageUrl: 'string',
+})
 
 export class BonusCardSchema extends Schema {
-  @type('string') id = ''
-  @type('string') name = ''
-  @type('string') description = ''
-  @type('string') effectType = ''
-  @type('string') imageUrl = ''
+  id = ''
+  name = ''
+  description = ''
+  effectType = ''
+  imageUrl = ''
 }
+defineTypes(BonusCardSchema, {
+  id: 'string',
+  name: 'string',
+  description: 'string',
+  effectType: 'string',
+  imageUrl: 'string',
+})
 
 export class TaskSchema extends Schema {
-  @type('string') id = ''
-  @type('string') abilityName = ''
-  @type('uint8') taskNumber = 0
-  @type(['string']) rewards = new ArraySchema<string>()
-  @type('string') taskType = ''
+  id = ''
+  abilityName = ''
+  taskNumber = 0
+  rewards = new ArraySchema<string>()
+  taskType = ''
 }
+defineTypes(TaskSchema, {
+  id: 'string',
+  abilityName: 'string',
+  taskNumber: 'uint8',
+  rewards: ['string'],
+  taskType: 'string',
+})
 
 export class DieRollSchema extends Schema {
-  @type('uint8') taskNumber = 0
-  @type('boolean') wasRerolled = false
-  @type('uint8') rerollCount = 0
+  taskNumber = 0
+  wasRerolled = false
+  rerollCount = 0
 }
+defineTypes(DieRollSchema, {
+  taskNumber: 'uint8',
+  wasRerolled: 'boolean',
+  rerollCount: 'uint8',
+})
 
 export class AbilityComparisonSchema extends Schema {
-  @type('uint8') playerScore = 0
-  @type('uint8') monsterScore = 0
-  @type('boolean') playerWins = false
+  playerScore = 0
+  monsterScore = 0
+  playerWins = false
 }
+defineTypes(AbilityComparisonSchema, {
+  playerScore: 'uint8',
+  monsterScore: 'uint8',
+  playerWins: 'boolean',
+})
 
 export class BattleResultSchema extends Schema {
-  @type('boolean') victory = false
-  @type({ map: AbilityComparisonSchema }) comparisons = new MapSchema<AbilityComparisonSchema>()
+  victory = false
+  comparisons = new MapSchema<AbilityComparisonSchema>()
 }
+defineTypes(BattleResultSchema, {
+  victory: 'boolean',
+  comparisons: { map: AbilityComparisonSchema },
+})
 
 export class GameEventSchema extends Schema {
-  @type('string') id = ''
-  @type('number') timestamp = 0
-  @type('string') playerId = ''
-  @type('string') message = ''
-  @type('string') type = ''
+  id = ''
+  timestamp = 0
+  playerId = ''
+  message = ''
+  type = ''
 }
+defineTypes(GameEventSchema, {
+  id: 'string',
+  timestamp: 'number',
+  playerId: 'string',
+  message: 'string',
+  type: 'string',
+})
 
 export class PlayerSchema extends Schema {
-  @type('string') id = ''
-  @type('string') name = ''
-  @type('uint8') difficultyLevel = 1
-  @type(AbilityScoresSchema) abilities = new AbilityScoresSchema()
-  @type([MonsterCardSchema]) monstersTamed = new ArraySchema<MonsterCardSchema>()
-  @type([BonusCardSchema]) bonusCards = new ArraySchema<BonusCardSchema>()
-  @type('boolean') connected = true
-  @type('boolean') ready = false
+  id = ''
+  name = ''
+  difficultyLevel = 1
+  abilities = new AbilityScoresSchema()
+  monstersTamed = new ArraySchema<MonsterCardSchema>()
+  bonusCards = new ArraySchema<BonusCardSchema>()
+  connected = true
+  ready = false
 }
+defineTypes(PlayerSchema, {
+  id: 'string',
+  name: 'string',
+  difficultyLevel: 'uint8',
+  abilities: AbilityScoresSchema,
+  monstersTamed: [MonsterCardSchema],
+  bonusCards: [BonusCardSchema],
+  connected: 'boolean',
+  ready: 'boolean',
+})
 
 export class TurnSchema extends Schema {
-  @type('string') activePlayerId = ''
-  @type('string') phase = ''
-  @type('string') chosenAction?: string
-  @type('string') chosenAbility?: string
-  @type(DieRollSchema) dieRoll?: DieRollSchema
-  @type(TaskSchema) currentTask?: TaskSchema
-  @type(MonsterCardSchema) drawnMonster?: MonsterCardSchema
-  @type(BonusCardSchema) drawnBonus?: BonusCardSchema
-  @type('string') drawnCardType?: string
-  @type(BattleResultSchema) battleResult?: BattleResultSchema
+  activePlayerId = ''
+  phase = ''
+  chosenAction?: string
+  chosenAbility?: string
+  dieRoll?: DieRollSchema
+  currentTask?: TaskSchema
+  drawnMonster?: MonsterCardSchema
+  drawnBonus?: BonusCardSchema
+  drawnCardType?: string
+  battleResult?: BattleResultSchema
 }
+defineTypes(TurnSchema, {
+  activePlayerId: 'string',
+  phase: 'string',
+  chosenAction: 'string',
+  chosenAbility: 'string',
+  dieRoll: DieRollSchema,
+  currentTask: TaskSchema,
+  drawnMonster: MonsterCardSchema,
+  drawnBonus: BonusCardSchema,
+  drawnCardType: 'string',
+  battleResult: BattleResultSchema,
+})
 
 export class RoomSettingsSchema extends Schema {
-  @type('uint8') maxPlayers = 4
-  @type('uint16') taskTimeLimitSeconds = 120
-  @type('string') roomName = ''
-  @type('string') roomCode = ''
+  maxPlayers = 4
+  taskTimeLimitSeconds = 120
+  roomName = ''
+  roomCode = ''
 }
+defineTypes(RoomSettingsSchema, {
+  maxPlayers: 'uint8',
+  taskTimeLimitSeconds: 'uint16',
+  roomName: 'string',
+  roomCode: 'string',
+})
 
 export class GameStateSchema extends Schema {
-  @type('string') phase = ''
-  @type([PlayerSchema]) players = new ArraySchema<PlayerSchema>()
-  @type(['string']) turnOrder = new ArraySchema<string>()
-  @type('uint8') currentTurnIndex = 0
-  @type(TurnSchema) turn?: TurnSchema
-  @type('uint8') cosmosDeckSize = 0
-  @type([GameEventSchema]) eventLog = new ArraySchema<GameEventSchema>()
-  @type('string') winnerId = ''
-  @type(RoomSettingsSchema) roomSettings = new RoomSettingsSchema()
+  phase = ''
+  players = new ArraySchema<PlayerSchema>()
+  turnOrder = new ArraySchema<string>()
+  currentTurnIndex = 0
+  turn?: TurnSchema
+  cosmosDeckSize = 0
+  eventLog = new ArraySchema<GameEventSchema>()
+  winnerId = ''
+  roomSettings = new RoomSettingsSchema()
 }
+defineTypes(GameStateSchema, {
+  phase: 'string',
+  players: [PlayerSchema],
+  turnOrder: ['string'],
+  currentTurnIndex: 'uint8',
+  turn: TurnSchema,
+  cosmosDeckSize: 'uint8',
+  eventLog: [GameEventSchema],
+  winnerId: 'string',
+  roomSettings: RoomSettingsSchema,
+})
