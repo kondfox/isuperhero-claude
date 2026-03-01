@@ -1,0 +1,20 @@
+{
+  "name": "@isuperhero/game-data",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@isuperhero/types": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^3.1.4"
+  }
+}

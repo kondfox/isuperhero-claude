@@ -15,6 +15,9 @@ infra/**/*.tfvars
 # Claude local settings
 .claude/settings.local.json
 
+# Game data (private — stored in DB, not in repo)
+packages/game-data/src/tasks-data.ts
+
 # Build artifacts
 *.tsbuildinfo
 *.d.ts.map
