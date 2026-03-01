@@ -21,6 +21,15 @@
             "command": "/Users/kond/kondfox/isuperhero-claude/.claude/hooks/playwright-verify-ui.sh"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/kond/kondfox/isuperhero-claude/.claude/hooks/check-versions.sh"
+          }
+        ]
       }
     ],
     "Stop": [
