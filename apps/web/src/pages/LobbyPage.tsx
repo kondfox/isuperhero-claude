@@ -249,14 +249,16 @@ function LobbyView() {
 
   return (
     <div className={styles.lobbyCard}>
-      <h2 className={styles.lobbyTitle}>Lobby</h2>
       <div className={styles.roomInfo}>
-        <h1 className={styles.roomName}>{state.roomSettings.roomName}</h1>
+        <h2 className={styles.lobbyTitle}>Lobby</h2>
         <div className={styles.roomCode}>
           <span>Code:</span>
           <span className={styles.codeValue}>{roomCode}</span>
         </div>
       </div>
+      {state.roomSettings.roomName && (
+        <p className={styles.roomName}>{state.roomSettings.roomName}</p>
+      )}
 
       {error && <div className={styles.error}>{error}</div>}
 

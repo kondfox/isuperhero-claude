@@ -3,9 +3,9 @@ import type { GameSnapshot } from '../types/game-state'
 /**
  * Converts a Colyseus Schema state object into a plain GameSnapshot.
  *
- * Colyseus client-side decoded schemas may have `toJSON()` that returns
- * incomplete data (e.g., empty nested objects). This function tries
- * `toJSON()` first, then falls back to manual field extraction.
+ * Colyseus client-side schemas using `defineTypes()` may have a `toJSON()`
+ * that returns default/empty values instead of the synced state. We always
+ * read properties directly from the schema object to get the real data.
  */
 export function schemaToSnapshot(schema: unknown): GameSnapshot {
   if (!schema || typeof schema !== 'object') {
@@ -14,20 +14,6 @@ export function schemaToSnapshot(schema: unknown): GameSnapshot {
 
   const state = schema as Record<string, unknown>
 
-  // Try toJSON() first — it works correctly for many Colyseus versions
-  if (typeof (state as Record<string, (...args: unknown[]) => unknown>).toJSON === 'function') {
-    const json = (state as { toJSON(): Record<string, unknown> }).toJSON()
-    if (
-      json &&
-      Array.isArray(json.players) &&
-      json.roomSettings &&
-      typeof json.phase === 'string'
-    ) {
-      return json as unknown as GameSnapshot
-    }
-  }
-
-  // Manual extraction for when toJSON() returns incomplete data
   return {
     phase: String(state.phase ?? ''),
     players: extractArray(state.players, extractPlayer),
