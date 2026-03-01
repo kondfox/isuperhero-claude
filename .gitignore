@@ -28,6 +28,7 @@ storybook-static/
 coverage/
 playwright-report/
 test-results/
+.features-gen/
 
 # OS
 .DS_Store
