@@ -109,6 +109,14 @@
   box-shadow: var(--shadow-card);
 }
 
+.lobbyTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin: 0 0 var(--space-6);
+  text-align: center;
+}
+
 .roomInfo {
   display: flex;
   align-items: center;

@@ -9,6 +9,8 @@ import {
   useState,
 } from 'react'
 import type { GameSnapshot } from '../types/game-state'
+import { generateRoomCode } from '../utils/room-code'
+import { schemaToSnapshot } from '../utils/schema-to-snapshot'
 
 const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:2567'
 
@@ -32,7 +34,7 @@ interface RoomContextValue {
   roomId: string | null
   error: string | null
   createRoom: (options: CreateRoomOptions) => Promise<void>
-  joinRoom: (roomId: string, options: JoinRoomOptions) => Promise<void>
+  joinRoom: (roomCode: string, options: JoinRoomOptions) => Promise<void>
   leaveRoom: () => Promise<void>
   send: (type: string, data?: Record<string, unknown>) => void
   clearError: () => void
@@ -62,14 +64,14 @@ export function RoomProvider({ children }: { children: ReactNode }) {
     setRoom(newRoom)
     setError(null)
 
-    // Set initial state
+    // Set initial state (may have default/empty values before first sync)
     if (newRoom.state) {
-      setState((newRoom.state as { toJSON: () => GameSnapshot }).toJSON())
+      setState(schemaToSnapshot(newRoom.state))
     }
 
-    // Subscribe to state changes
+    // Subscribe to state changes — fires on every server sync
     newRoom.onStateChange((newState: unknown) => {
-      setState((newState as { toJSON: () => GameSnapshot }).toJSON())
+      setState(schemaToSnapshot(newState))
     })
 
     // Listen for server errors
@@ -90,7 +92,8 @@ export function RoomProvider({ children }: { children: ReactNode }) {
       try {
         setError(null)
         const client = getClient()
-        const newRoom = await client.create('game', options)
+        const roomCode = generateRoomCode()
+        const newRoom = await client.create('game', { ...options, roomCode })
         setupRoom(newRoom)
       } catch (err) {
         setError((err as Error).message)
@@ -100,11 +103,11 @@ export function RoomProvider({ children }: { children: ReactNode }) {
   )
 
   const joinRoom = useCallback(
-    async (roomId: string, options: JoinRoomOptions) => {
+    async (roomCode: string, options: JoinRoomOptions) => {
       try {
         setError(null)
         const client = getClient()
-        const newRoom = await client.joinById(roomId, options)
+        const newRoom = await client.join('game', { ...options, roomCode })
         setupRoom(newRoom)
       } catch (err) {
         setError((err as Error).message)

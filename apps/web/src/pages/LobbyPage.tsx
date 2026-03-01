@@ -61,9 +61,9 @@ function CreateRoomForm() {
               value={difficulty}
               onChange={(e) => setDifficulty(Number(e.target.value) as DifficultyLevel)}
             >
-              <option value={1}>Level 1</option>
-              <option value={2}>Level 2</option>
-              <option value={3}>Level 3</option>
+              <option value={1}>Level 1 — Ages 5-7</option>
+              <option value={2}>Level 2 — Ages 7-12</option>
+              <option value={3}>Level 3 — Ages 12+</option>
             </select>
           </div>
 
@@ -195,9 +195,9 @@ function JoinRoomForm() {
             value={difficulty}
             onChange={(e) => setDifficulty(Number(e.target.value) as DifficultyLevel)}
           >
-            <option value={1}>Level 1</option>
-            <option value={2}>Level 2</option>
-            <option value={3}>Level 3</option>
+            <option value={1}>Level 1 — Ages 5-7</option>
+            <option value={2}>Level 2 — Ages 7-12</option>
+            <option value={3}>Level 3 — Ages 12+</option>
           </select>
         </div>
 
@@ -245,13 +245,16 @@ function LobbyView() {
     await leaveRoom()
   }
 
+  const roomCode = state.roomSettings.roomCode || roomId
+
   return (
     <div className={styles.lobbyCard}>
+      <h2 className={styles.lobbyTitle}>Lobby</h2>
       <div className={styles.roomInfo}>
         <h1 className={styles.roomName}>{state.roomSettings.roomName}</h1>
         <div className={styles.roomCode}>
           <span>Code:</span>
-          <span className={styles.codeValue}>{roomId}</span>
+          <span className={styles.codeValue}>{roomCode}</span>
         </div>
       </div>
 
