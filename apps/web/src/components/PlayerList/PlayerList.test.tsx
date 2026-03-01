@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { AbilityName, DifficultyLevel } from '../../types/game-state'
 import type { PlayerState } from '../../types/game-state'
+import { AbilityName, DifficultyLevel } from '../../types/game-state'
 import { PlayerList } from './PlayerList'
 
 const emptyAbilities = {

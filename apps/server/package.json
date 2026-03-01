@@ -28,6 +28,6 @@
   "devDependencies": {
     "@colyseus/testing": "^0.15.1",
     "drizzle-kit": "^0.31.9",
-    "vitest": "^3.1.4"
+    "vitest": "^4.0.18"
   }
 }
