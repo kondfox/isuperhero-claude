@@ -21,6 +21,7 @@ export default defineConfig({
         test: {
           name: 'server',
           root: './apps/server',
+          setupFiles: ['./vitest.setup.ts'],
         },
       },
     ],
