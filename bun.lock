@@ -15,7 +15,9 @@
       "name": "@isuperhero/server",
       "version": "0.1.0",
       "dependencies": {
+        "@colyseus/schema": "^2.0.4",
         "@isuperhero/game-data": "workspace:*",
+        "@isuperhero/game-logic": "workspace:*",
         "@isuperhero/types": "workspace:*",
         "colyseus": "^0.15.23",
         "drizzle-orm": "^0.45.1",
