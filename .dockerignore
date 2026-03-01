@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.git/
+.github/
+.claude/
+infra/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.env
+.env.*
+.DS_Store
