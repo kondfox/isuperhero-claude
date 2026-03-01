@@ -15,7 +15,8 @@
     "db:generate": "bun run --env-file .env --filter @isuperhero/server db:generate",
     "db:migrate": "bun run --env-file .env --filter @isuperhero/server db:migrate",
     "db:seed": "bun run --env-file .env --filter @isuperhero/server db:seed",
-    "db:studio": "bun run --env-file .env --filter @isuperhero/server db:studio"
+    "db:studio": "bun run --env-file .env --filter @isuperhero/server db:studio",
+    "storybook": "bun run --filter @isuperhero/web storybook"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

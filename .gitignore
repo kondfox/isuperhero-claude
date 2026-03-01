@@ -22,6 +22,7 @@ packages/game-data/src/tasks-data.ts
 *.tsbuildinfo
 *.d.ts.map
 dist/
+storybook-static/
 
 # Test output
 coverage/
