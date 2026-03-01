@@ -1,8 +1,11 @@
+import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
+  plugins: [react()],
   test: {
-    // Exclude Playwright E2E tests — those run via `bun run test:e2e`
+    environment: 'jsdom',
+    setupFiles: ['./vitest.setup.ts'],
     exclude: ['e2e/**', 'node_modules/**'],
   },
 })
