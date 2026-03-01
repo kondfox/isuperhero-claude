@@ -11,27 +11,22 @@ export function rollDie(
   randomFn: () => number = Math.random,
 ): DieRollResult {
   const key = getRolledTaskKey(abilityName);
-  let usedNumbers = rolledTasks[key] ?? new Set<number>();
+  const usedNumbers = rolledTasks[key] ?? new Set<number>();
 
-  // If all 20 are exhausted, reset
-  if (usedNumbers.size >= DIE_SIDES) {
-    usedNumbers = new Set<number>();
-  }
+  // Build list of available numbers, reset if all exhausted
+  const allNumbers = Array.from({ length: DIE_SIDES }, (_, i) => i + 1);
+  const available =
+    usedNumbers.size >= DIE_SIDES
+      ? allNumbers
+      : allNumbers.filter((n) => !usedNumbers.has(n));
 
-  let taskNumber: number;
-  let rerollCount = 0;
-
-  do {
-    taskNumber = Math.floor(randomFn() * DIE_SIDES) + 1;
-    if (usedNumbers.has(taskNumber)) {
-      rerollCount++;
-    }
-  } while (usedNumbers.has(taskNumber));
+  const index = Math.floor(randomFn() * available.length);
+  const taskNumber = available[index];
 
   return {
     taskNumber,
-    wasRerolled: rerollCount > 0,
-    rerollCount,
+    wasRerolled: usedNumbers.size > 0 && usedNumbers.size < DIE_SIDES,
+    rerollCount: 0,
   };
 }
 

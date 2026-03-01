@@ -17,7 +17,7 @@ describe("rollDie", () => {
   });
 
   it("uses the injected random function", () => {
-    // randomFn returning 0 should give taskNumber 1
+    // randomFn returning 0 picks index 0 from available = [1..20], so taskNumber 1
     const result = rollDie(AbilityName.Management, {}, () => 0);
     expect(result.taskNumber).toBe(1);
   });
@@ -28,40 +28,32 @@ describe("rollDie", () => {
     expect(result.rerollCount).toBe(0);
   });
 
-  it("rerolls when number already used", () => {
-    const used = new Set([11]); // 0.5 * 20 + 1 = 11
+  it("never returns a used number", () => {
+    const used = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
     const rolledTasks = { [AbilityName.Management]: used };
 
-    let callCount = 0;
-    const randomFn = () => {
-      callCount++;
-      // First call returns 0.5 (taskNumber 11, used), second returns 0.7 (taskNumber 15)
-      return callCount === 1 ? 0.5 : 0.7;
-    };
-
-    const result = rollDie(AbilityName.Management, rolledTasks, randomFn);
-    expect(result.taskNumber).toBe(15);
+    // Only number 20 is available, any random value should give 20
+    const result = rollDie(AbilityName.Management, rolledTasks, () => 0);
+    expect(result.taskNumber).toBe(20);
     expect(result.wasRerolled).toBe(true);
-    expect(result.rerollCount).toBe(1);
   });
 
-  it("handles multiple rerolls", () => {
-    const used = new Set([11, 15]); // both will be tried
+  it("selects from available numbers only", () => {
+    const used = new Set([1, 3, 5, 7, 9, 11, 13, 15, 17, 19]); // odd numbers used
     const rolledTasks = { [AbilityName.Management]: used };
 
-    let callCount = 0;
-    const values = [0.5, 0.7, 0.1]; // 11 (used), 15 (used), 3 (free)
-    const randomFn = () => values[callCount++];
-
-    const result = rollDie(AbilityName.Management, rolledTasks, randomFn);
-    expect(result.taskNumber).toBe(3);
-    expect(result.rerollCount).toBe(2);
+    // Available: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20] (10 numbers)
+    // randomFn 0 picks index 0 = 2
+    const result = rollDie(AbilityName.Management, rolledTasks, () => 0);
+    expect(result.taskNumber).toBe(2);
+    expect(result.wasRerolled).toBe(true);
   });
 
   it("resets when all 20 numbers are exhausted", () => {
     const allUsed = new Set(Array.from({ length: 20 }, (_, i) => i + 1));
     const rolledTasks = { [AbilityName.Management]: allUsed };
 
+    // All exhausted → full set available again, randomFn 0.5 picks from middle
     const result = rollDie(AbilityName.Management, rolledTasks, () => 0.5);
     expect(result.taskNumber).toBe(11);
     expect(result.wasRerolled).toBe(false);
@@ -71,15 +63,30 @@ describe("rollDie", () => {
     const used = new Set([11]);
     const rolledTasks = { [AbilityName.Communication]: used };
 
+    // Management has no used numbers, so 11 is available
     const result = rollDie(AbilityName.Management, rolledTasks, () => 0.5);
     expect(result.taskNumber).toBe(11);
     expect(result.wasRerolled).toBe(false);
   });
 
   it("works with empty rolledTasks", () => {
+    // 20 available numbers, randomFn 0.95 → index floor(0.95*20)=19 → number 20
     const result = rollDie(AbilityName.Orientation, {}, () => 0.95);
     expect(result.taskNumber).toBe(20);
     expect(result.wasRerolled).toBe(false);
+  });
+
+  it("guarantees O(1) selection regardless of used count", () => {
+    // Even with 19/20 used, only one randomFn call needed
+    const used = new Set(Array.from({ length: 19 }, (_, i) => i + 1)); // 1-19 used
+    const rolledTasks = { [AbilityName.Management]: used };
+    let callCount = 0;
+    const result = rollDie(AbilityName.Management, rolledTasks, () => {
+      callCount++;
+      return 0;
+    });
+    expect(result.taskNumber).toBe(20);
+    expect(callCount).toBe(1);
   });
 });
 
