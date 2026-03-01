@@ -10,13 +10,7 @@ export default defineConfig({
           root: './packages/game-data',
         },
       },
-      {
-        test: {
-          name: 'web',
-          root: './apps/web',
-          exclude: ['e2e/**', 'node_modules/**'],
-        },
-      },
+      'apps/web/vitest.config.ts',
       {
         test: {
           name: 'server',
