@@ -266,6 +266,18 @@ describe('GameRoom', () => {
       expect(room.state.turn?.currentTask).toBeDefined()
     })
 
+    it('rollDie uses fallback task when task index is empty', () => {
+      const { room, activeClient } = setupGameInProgress()
+      // Clear the task index to simulate CI (no tasks-data.ts)
+      ;(room as unknown as { taskIndex: Map<string, unknown> }).taskIndex.clear()
+      sendMessage(room, 'chooseAction', activeClient, { action: TurnAction.DevelopAbility })
+      sendMessage(room, 'chooseAbility', activeClient, { ability: AbilityName.Management })
+      sendMessage(room, 'rollDie', activeClient)
+      expect(room.state.turn?.phase).toBe(TurnPhase.CompletingTask)
+      expect(room.state.turn?.currentTask).toBeDefined()
+      expect(room.state.turn?.currentTask?.abilityName).toBe(AbilityName.Management)
+    })
+
     it('taskComplete success → TurnComplete with rewards', () => {
       const { room, activeClient, activeId } = setupGameInProgress()
       sendMessage(room, 'chooseAction', activeClient, { action: TurnAction.DevelopAbility })
