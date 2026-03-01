@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 import type { Room } from 'colyseus.js'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
@@ -143,5 +144,44 @@ describe('LobbyPage - Lobby view', () => {
     expect(screen.getByText('Players (2/4)')).toBeInTheDocument()
     expect(screen.getByText('Alice')).toBeInTheDocument()
     expect(screen.getByText('Bob')).toBeInTheDocument()
+  })
+
+  it('shows (1/2) when maxPlayers is 2 and one player is connected', () => {
+    const twoPlayerState: GameSnapshot = {
+      ...mockState,
+      roomSettings: { ...mockState.roomSettings, maxPlayers: 2 },
+    }
+    renderLobbyPage('create', { ...connectedContext, state: twoPlayerState })
+    expect(screen.getByText('Players (1/2)')).toBeInTheDocument()
+  })
+
+  it('shows the creator in the player list immediately upon entering the lobby', () => {
+    renderLobbyPage('create', connectedContext)
+    // The player should be visible (not "No players yet")
+    expect(screen.queryByText('No players yet')).not.toBeInTheDocument()
+    expect(screen.getByText('Alice')).toBeInTheDocument()
+    expect(screen.getByText('(You)')).toBeInTheDocument()
+  })
+})
+
+describe('LobbyPage - Join Room form', () => {
+  it('calls joinRoom with room code and options on submit', async () => {
+    const joinRoom = vi.fn()
+    renderLobbyPage('join', { joinRoom })
+
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText('Room Code'), 'ABC123')
+    await user.type(screen.getByLabelText('Your Name'), 'Bob')
+    await user.click(screen.getByRole('button', { name: /join room/i }))
+
+    expect(joinRoom).toHaveBeenCalledWith('ABC123', {
+      name: 'Bob',
+      difficultyLevel: DifficultyLevel.Level1,
+    })
+  })
+
+  it('shows error when join fails', () => {
+    renderLobbyPage('join', { error: 'no rooms found with provided criteria' })
+    expect(screen.getByText('no rooms found with provided criteria')).toBeInTheDocument()
   })
 })

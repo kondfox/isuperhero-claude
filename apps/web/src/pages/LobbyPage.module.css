@@ -110,27 +110,24 @@
 }
 
 .lobbyTitle {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
-  margin: 0 0 var(--space-6);
-  text-align: center;
+  margin: 0;
 }
 
 .roomInfo {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-6);
   padding-bottom: var(--space-4);
   border-bottom: 1px solid color-mix(in srgb, var(--color-text-muted) 20%, transparent);
 }
 
 .roomName {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text);
-  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: var(--space-2) 0 var(--space-6);
 }
 
 .roomCode {
