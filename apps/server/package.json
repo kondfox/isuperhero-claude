@@ -16,10 +16,11 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@colyseus/schema": "^2.0.4",
+    "@colyseus/ws-transport": "0.15.3",
     "@isuperhero/game-data": "workspace:*",
     "@isuperhero/game-logic": "workspace:*",
     "@isuperhero/types": "workspace:*",
-    "@colyseus/schema": "^2.0.4",
     "colyseus": "^0.15.23",
     "drizzle-orm": "^0.45.1",
     "postgres": "^3.4.8"

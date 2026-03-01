@@ -1,11 +1,30 @@
 import { ArraySchema, MapSchema, Schema, defineTypes } from '@colyseus/schema'
 
+/**
+ * All schema classes use `declare` for typed fields instead of class field
+ * initializers. This is required because Bun's transpiler uses
+ * `Object.defineProperty` for class fields, which replaces the getter/setter
+ * descriptors that `@colyseus/schema` sets up for change tracking.
+ *
+ * Defaults are set in constructors via direct assignment (which triggers
+ * the schema setters after `super()` applies them).
+ */
+
 export class AbilityScoresSchema extends Schema {
-  management = 0
-  communication = 0
-  orientation = 0
-  processing = 0
-  movementEnergy = 0
+  declare management: number
+  declare communication: number
+  declare orientation: number
+  declare processing: number
+  declare movementEnergy: number
+
+  constructor() {
+    super()
+    this.management = 0
+    this.communication = 0
+    this.orientation = 0
+    this.processing = 0
+    this.movementEnergy = 0
+  }
 }
 defineTypes(AbilityScoresSchema, {
   management: 'uint8',
@@ -16,10 +35,18 @@ defineTypes(AbilityScoresSchema, {
 })
 
 export class MonsterCardSchema extends Schema {
-  id = ''
-  name = ''
-  abilities = new AbilityScoresSchema()
-  imageUrl = ''
+  declare id: string
+  declare name: string
+  declare abilities: AbilityScoresSchema
+  declare imageUrl: string
+
+  constructor() {
+    super()
+    this.id = ''
+    this.name = ''
+    this.abilities = new AbilityScoresSchema()
+    this.imageUrl = ''
+  }
 }
 defineTypes(MonsterCardSchema, {
   id: 'string',
@@ -29,11 +56,20 @@ defineTypes(MonsterCardSchema, {
 })
 
 export class BonusCardSchema extends Schema {
-  id = ''
-  name = ''
-  description = ''
-  effectType = ''
-  imageUrl = ''
+  declare id: string
+  declare name: string
+  declare description: string
+  declare effectType: string
+  declare imageUrl: string
+
+  constructor() {
+    super()
+    this.id = ''
+    this.name = ''
+    this.description = ''
+    this.effectType = ''
+    this.imageUrl = ''
+  }
 }
 defineTypes(BonusCardSchema, {
   id: 'string',
@@ -44,11 +80,20 @@ defineTypes(BonusCardSchema, {
 })
 
 export class TaskSchema extends Schema {
-  id = ''
-  abilityName = ''
-  taskNumber = 0
-  rewards = new ArraySchema<string>()
-  taskType = ''
+  declare id: string
+  declare abilityName: string
+  declare taskNumber: number
+  declare rewards: ArraySchema<string>
+  declare taskType: string
+
+  constructor() {
+    super()
+    this.id = ''
+    this.abilityName = ''
+    this.taskNumber = 0
+    this.rewards = new ArraySchema<string>()
+    this.taskType = ''
+  }
 }
 defineTypes(TaskSchema, {
   id: 'string',
@@ -59,9 +104,16 @@ defineTypes(TaskSchema, {
 })
 
 export class DieRollSchema extends Schema {
-  taskNumber = 0
-  wasRerolled = false
-  rerollCount = 0
+  declare taskNumber: number
+  declare wasRerolled: boolean
+  declare rerollCount: number
+
+  constructor() {
+    super()
+    this.taskNumber = 0
+    this.wasRerolled = false
+    this.rerollCount = 0
+  }
 }
 defineTypes(DieRollSchema, {
   taskNumber: 'uint8',
@@ -70,9 +122,16 @@ defineTypes(DieRollSchema, {
 })
 
 export class AbilityComparisonSchema extends Schema {
-  playerScore = 0
-  monsterScore = 0
-  playerWins = false
+  declare playerScore: number
+  declare monsterScore: number
+  declare playerWins: boolean
+
+  constructor() {
+    super()
+    this.playerScore = 0
+    this.monsterScore = 0
+    this.playerWins = false
+  }
 }
 defineTypes(AbilityComparisonSchema, {
   playerScore: 'uint8',
@@ -81,8 +140,14 @@ defineTypes(AbilityComparisonSchema, {
 })
 
 export class BattleResultSchema extends Schema {
-  victory = false
-  comparisons = new MapSchema<AbilityComparisonSchema>()
+  declare victory: boolean
+  declare comparisons: MapSchema<AbilityComparisonSchema>
+
+  constructor() {
+    super()
+    this.victory = false
+    this.comparisons = new MapSchema<AbilityComparisonSchema>()
+  }
 }
 defineTypes(BattleResultSchema, {
   victory: 'boolean',
@@ -90,11 +155,20 @@ defineTypes(BattleResultSchema, {
 })
 
 export class GameEventSchema extends Schema {
-  id = ''
-  timestamp = 0
-  playerId = ''
-  message = ''
-  type = ''
+  declare id: string
+  declare timestamp: number
+  declare playerId: string
+  declare message: string
+  declare type: string
+
+  constructor() {
+    super()
+    this.id = ''
+    this.timestamp = 0
+    this.playerId = ''
+    this.message = ''
+    this.type = ''
+  }
 }
 defineTypes(GameEventSchema, {
   id: 'string',
@@ -105,14 +179,26 @@ defineTypes(GameEventSchema, {
 })
 
 export class PlayerSchema extends Schema {
-  id = ''
-  name = ''
-  difficultyLevel = 1
-  abilities = new AbilityScoresSchema()
-  monstersTamed = new ArraySchema<MonsterCardSchema>()
-  bonusCards = new ArraySchema<BonusCardSchema>()
-  connected = true
-  ready = false
+  declare id: string
+  declare name: string
+  declare difficultyLevel: number
+  declare abilities: AbilityScoresSchema
+  declare monstersTamed: ArraySchema<MonsterCardSchema>
+  declare bonusCards: ArraySchema<BonusCardSchema>
+  declare connected: boolean
+  declare ready: boolean
+
+  constructor() {
+    super()
+    this.id = ''
+    this.name = ''
+    this.difficultyLevel = 1
+    this.abilities = new AbilityScoresSchema()
+    this.monstersTamed = new ArraySchema<MonsterCardSchema>()
+    this.bonusCards = new ArraySchema<BonusCardSchema>()
+    this.connected = true
+    this.ready = false
+  }
 }
 defineTypes(PlayerSchema, {
   id: 'string',
@@ -126,16 +212,22 @@ defineTypes(PlayerSchema, {
 })
 
 export class TurnSchema extends Schema {
-  activePlayerId = ''
-  phase = ''
-  chosenAction?: string
-  chosenAbility?: string
-  dieRoll?: DieRollSchema
-  currentTask?: TaskSchema
-  drawnMonster?: MonsterCardSchema
-  drawnBonus?: BonusCardSchema
-  drawnCardType?: string
-  battleResult?: BattleResultSchema
+  declare activePlayerId: string
+  declare phase: string
+  declare chosenAction: string | undefined
+  declare chosenAbility: string | undefined
+  declare dieRoll: DieRollSchema | undefined
+  declare currentTask: TaskSchema | undefined
+  declare drawnMonster: MonsterCardSchema | undefined
+  declare drawnBonus: BonusCardSchema | undefined
+  declare drawnCardType: string | undefined
+  declare battleResult: BattleResultSchema | undefined
+
+  constructor() {
+    super()
+    this.activePlayerId = ''
+    this.phase = ''
+  }
 }
 defineTypes(TurnSchema, {
   activePlayerId: 'string',
@@ -151,10 +243,18 @@ defineTypes(TurnSchema, {
 })
 
 export class RoomSettingsSchema extends Schema {
-  maxPlayers = 4
-  taskTimeLimitSeconds = 120
-  roomName = ''
-  roomCode = ''
+  declare maxPlayers: number
+  declare taskTimeLimitSeconds: number
+  declare roomName: string
+  declare roomCode: string
+
+  constructor() {
+    super()
+    this.maxPlayers = 4
+    this.taskTimeLimitSeconds = 120
+    this.roomName = ''
+    this.roomCode = ''
+  }
 }
 defineTypes(RoomSettingsSchema, {
   maxPlayers: 'uint8',
@@ -164,15 +264,27 @@ defineTypes(RoomSettingsSchema, {
 })
 
 export class GameStateSchema extends Schema {
-  phase = ''
-  players = new ArraySchema<PlayerSchema>()
-  turnOrder = new ArraySchema<string>()
-  currentTurnIndex = 0
-  turn?: TurnSchema
-  cosmosDeckSize = 0
-  eventLog = new ArraySchema<GameEventSchema>()
-  winnerId = ''
-  roomSettings = new RoomSettingsSchema()
+  declare phase: string
+  declare players: ArraySchema<PlayerSchema>
+  declare turnOrder: ArraySchema<string>
+  declare currentTurnIndex: number
+  declare turn: TurnSchema | undefined
+  declare cosmosDeckSize: number
+  declare eventLog: ArraySchema<GameEventSchema>
+  declare winnerId: string
+  declare roomSettings: RoomSettingsSchema
+
+  constructor() {
+    super()
+    this.phase = ''
+    this.players = new ArraySchema<PlayerSchema>()
+    this.turnOrder = new ArraySchema<string>()
+    this.currentTurnIndex = 0
+    this.cosmosDeckSize = 0
+    this.eventLog = new ArraySchema<GameEventSchema>()
+    this.winnerId = ''
+    this.roomSettings = new RoomSettingsSchema()
+  }
 }
 defineTypes(GameStateSchema, {
   phase: 'string',

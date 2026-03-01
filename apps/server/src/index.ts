@@ -1,3 +1,4 @@
+import './bun-ws-patch'
 import { createServer } from 'node:http'
 import { Server } from 'colyseus'
 import { GameRoom } from './rooms/GameRoom'
