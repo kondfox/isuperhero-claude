@@ -1,4 +1,4 @@
-@game-board @wip
+@game-board
 Feature: Game Start
 
   Scenario: Players start a game and both see the game board

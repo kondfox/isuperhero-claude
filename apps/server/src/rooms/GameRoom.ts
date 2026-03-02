@@ -1,5 +1,6 @@
 import { BONUS_CARDS, COSMOS_DECK_BONUS_COUNT, MONSTERS, TASKS } from '@isuperhero/game-data'
 import {
+  addEvent,
   addPlayerToGame,
   advanceToNextPlayer,
   applyBattleDefeatPenalty,
@@ -10,6 +11,7 @@ import {
   applyDrawCard,
   applyTaskComplete,
   checkGameOver,
+  createGameEvent,
   createGameState,
   createPlayer,
   createTurn,
@@ -35,6 +37,7 @@ import {
   type AbilityName,
   CardType,
   DifficultyLevel,
+  GameEventType,
   GamePhase,
   TaskType,
   TurnAction,
@@ -323,6 +326,19 @@ export class GameRoom extends Room<GameStateSchema> {
   ): void {
     this.gameState.cosmosDeck = remainingDeck
     this.gameState = applyDrawCard(this.gameState, card, cardType)
+
+    // Log card draw event
+    const activePlayerId = this.gameState.turn?.activePlayerId ?? ''
+    const drawingPlayer = this.gameState.players.find((p) => p.id === activePlayerId)
+    const playerName = drawingPlayer?.name ?? 'Player'
+    const cardName = 'name' in card ? card.name : 'a card'
+    this.gameState = {
+      ...this.gameState,
+      eventLog: addEvent(
+        this.gameState.eventLog,
+        createGameEvent(activePlayerId, `${playerName} drew ${cardName}`, GameEventType.CardDrawn),
+      ),
+    }
 
     // Auto-resolve monster battle
     if (cardType === CardType.Monster && this.gameState.turn?.phase === TurnPhase.MonsterBattle) {

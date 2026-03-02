@@ -9,8 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "bddgen && playwright test --grep-invert @wip",
-    "test:e2e:all": "bddgen && playwright test",
+    "test:e2e": "bddgen && playwright test",
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"

@@ -1,4 +1,4 @@
-@game-board @wip
+@game-board
 Feature: Develop Ability
 
   Background:

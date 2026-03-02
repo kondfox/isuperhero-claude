@@ -1,4 +1,4 @@
-@game-board @wip
+@game-board
 Feature: Turn Rotation
 
   Scenario: Turn passes to next player after ending turn

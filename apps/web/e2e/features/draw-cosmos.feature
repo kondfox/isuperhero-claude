@@ -1,4 +1,4 @@
-@game-board @wip
+@game-board
 Feature: Draw from Cosmos
 
   Background:

@@ -129,13 +129,19 @@ When('the active player resolves the draw outcome', async ({ world }) => {
   if (!world.activePlayerPage) throw new Error('Active player not determined')
   const page = world.activePlayerPage
 
-  // If the draw resulted in a monster battle defeat, the player must choose
-  // an ability to lose. Otherwise the draw auto-resolved to TurnComplete.
+  // Wait for the draw to be fully processed — the phase will settle into
+  // either TurnComplete (bonus card or monster victory) or BattleDefeatPenalty (monster defeat).
+  const endTurnButton = page.getByRole('button', { name: 'End Turn' })
   const penaltySection = page.getByTestId('battle-defeat-penalty')
-  const hasPenalty = await penaltySection.isVisible().catch(() => false)
 
-  if (hasPenalty) {
-    // Choose the first available ability to lose
+  // Wait for either End Turn or battle penalty to appear
+  await Promise.race([
+    endTurnButton.waitFor({ state: 'visible', timeout: 10000 }),
+    penaltySection.waitFor({ state: 'visible', timeout: 10000 }),
+  ])
+
+  // If penalty visible, choose the first available ability to lose
+  if (await penaltySection.isVisible()) {
     await penaltySection.getByRole('button').first().click()
   }
 })
@@ -150,7 +156,7 @@ Then('the inactive player should see a waiting message', async ({ world }) => {
 // === Game board content assertions ===
 
 Then('I should see {string} on the game board', async ({ page }, text: string) => {
-  await expect(page.getByTestId('game-board').getByText(text)).toBeVisible()
+  await expect(page.getByTestId('game-board').getByText(text, { exact: true })).toBeVisible()
 })
 
 // === Turn advancement ===
