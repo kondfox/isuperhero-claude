@@ -5,6 +5,9 @@ interface World {
   roomCode: string
   aliceContext: BrowserContext | null
   alicePage: Page | null
+  activePlayerPage: Page | null
+  inactivePlayerPage: Page | null
+  initialActivePlayerName: string
 }
 
 export const test = base.extend<{ world: World }>({
@@ -14,6 +17,9 @@ export const test = base.extend<{ world: World }>({
       roomCode: '',
       aliceContext: null,
       alicePage: null,
+      activePlayerPage: null,
+      inactivePlayerPage: null,
+      initialActivePlayerName: '',
     }
     await use(world)
     // Cleanup: close Alice's context if it was created
