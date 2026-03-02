@@ -30,6 +30,7 @@ export function GamePage() {
   const activePlayer = state.players.find((p) => p.id === turn.activePlayerId)
   const activePlayerName = activePlayer?.name ?? 'Player'
   const hasDrawnCard = turn.drawnMonster || turn.drawnBonus
+  const developDone = !!turn.currentTask
 
   return (
     <main className={styles.page} data-testid="game-board">
@@ -50,7 +51,7 @@ export function GamePage() {
         {isMyTurn ? 'Your turn' : `Waiting for ${activePlayerName}...`}
       </div>
 
-      {isMyTurn && turn.phase === TurnPhase.ChoosingAction && (
+      {isMyTurn && turn.phase === TurnPhase.ChoosingAction && !developDone && (
         <div className={styles.actions}>
           <Button onClick={() => send('chooseAction', { action: 'developAbility' })}>
             Develop Ability
@@ -60,6 +61,17 @@ export function GamePage() {
             onClick={() => send('chooseAction', { action: 'drawFromCosmos' })}
           >
             Draw from Cosmos
+          </Button>
+        </div>
+      )}
+
+      {isMyTurn && turn.phase === TurnPhase.ChoosingAction && developDone && (
+        <div className={styles.actions}>
+          <Button onClick={() => send('chooseAction', { action: 'drawFromCosmos' })}>
+            Draw from Cosmos
+          </Button>
+          <Button variant="secondary" onClick={() => send('endTurn')}>
+            End Turn
           </Button>
         </div>
       )}

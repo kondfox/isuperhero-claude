@@ -10,6 +10,7 @@ import {
   applyDieRoll,
   applyDrawCard,
   applyTaskComplete,
+  canEndTurn,
   checkGameOver,
   createGameEvent,
   createGameState,
@@ -288,7 +289,7 @@ export class GameRoom extends Room<GameStateSchema> {
   private handleEndTurn(client: Client): void {
     try {
       this.validateActivePlayer(client)
-      if (this.gameState.turn?.phase !== TurnPhase.TurnComplete) {
+      if (!this.gameState.turn || !canEndTurn(this.gameState.turn)) {
         throw new Error('Turn is not complete')
       }
       this.gameState = advanceToNextPlayer(this.gameState)

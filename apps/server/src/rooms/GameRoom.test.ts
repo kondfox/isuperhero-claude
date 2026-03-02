@@ -278,25 +278,25 @@ describe('GameRoom', () => {
       expect(room.state.turn?.currentTask?.abilityName).toBe(AbilityName.Management)
     })
 
-    it('taskComplete success → TurnComplete with rewards', () => {
+    it('taskComplete success → ChoosingAction (allows optional draw)', () => {
       const { room, activeClient, activeId } = setupGameInProgress()
       sendMessage(room, 'chooseAction', activeClient, { action: TurnAction.DevelopAbility })
       sendMessage(room, 'chooseAbility', activeClient, { ability: AbilityName.Management })
       sendMessage(room, 'rollDie', activeClient)
       sendMessage(room, 'taskComplete', activeClient, { success: true })
-      expect(room.state.turn?.phase).toBe(TurnPhase.TurnComplete)
+      expect(room.state.turn?.phase).toBe(TurnPhase.ChoosingAction)
     })
 
-    it('taskComplete failure → TurnComplete', () => {
+    it('taskComplete failure → ChoosingAction (allows optional draw)', () => {
       const { room, activeClient } = setupGameInProgress()
       sendMessage(room, 'chooseAction', activeClient, { action: TurnAction.DevelopAbility })
       sendMessage(room, 'chooseAbility', activeClient, { ability: AbilityName.Management })
       sendMessage(room, 'rollDie', activeClient)
       sendMessage(room, 'taskComplete', activeClient, { success: false })
-      expect(room.state.turn?.phase).toBe(TurnPhase.TurnComplete)
+      expect(room.state.turn?.phase).toBe(TurnPhase.ChoosingAction)
     })
 
-    it('endTurn advances to next player', () => {
+    it('endTurn after develop advances to next player', () => {
       const { room, activeClient, activeId } = setupGameInProgress()
       sendMessage(room, 'chooseAction', activeClient, { action: TurnAction.DevelopAbility })
       sendMessage(room, 'chooseAbility', activeClient, { ability: AbilityName.Management })

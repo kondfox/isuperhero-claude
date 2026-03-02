@@ -64,6 +64,9 @@ export function applyChooseAction(state: GameState, action: TurnAction): GameSta
   const turn = assertPhase(state, TurnPhase.ChoosingAction)
 
   if (action === TurnAction.DevelopAbility) {
+    if (turn.currentTask) {
+      throw new Error('Already developed this turn')
+    }
     return {
       ...state,
       turn: { ...turn, chosenAction: action, phase: TurnPhase.ChoosingAbility },
@@ -107,7 +110,7 @@ export function applyTaskComplete(state: GameState, success: boolean): GameState
   if (!success) {
     return {
       ...state,
-      turn: { ...turn, phase: TurnPhase.TurnComplete },
+      turn: { ...turn, phase: TurnPhase.ChoosingAction },
     }
   }
 
@@ -127,8 +130,15 @@ export function applyTaskComplete(state: GameState, success: boolean): GameState
   return {
     ...state,
     players: state.players.map((p) => (p.id === player.id ? updatedPlayer : p)),
-    turn: { ...turn, phase: TurnPhase.TurnComplete },
+    turn: { ...turn, phase: TurnPhase.ChoosingAction },
   }
+}
+
+export function canEndTurn(turn: TurnState): boolean {
+  if (turn.phase === TurnPhase.TurnComplete) return true
+  // After developing an ability, player can end turn without drawing
+  if (turn.phase === TurnPhase.ChoosingAction && turn.currentTask) return true
+  return false
 }
 
 export function applyDrawCard(
