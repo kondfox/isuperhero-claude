@@ -10,6 +10,7 @@ import {
   TaskType,
   TurnAction,
   TurnPhase,
+  type TurnState,
 } from '@isuperhero/types'
 import { describe, expect, it } from 'vitest'
 import { createGameState, createPlayer } from './create-game'
@@ -22,6 +23,7 @@ import {
   applyDieRoll,
   applyDrawCard,
   applyTaskComplete,
+  canEndTurn,
   createTurn,
 } from './turn'
 
@@ -193,18 +195,18 @@ describe('applyTaskComplete', () => {
     return state
   }
 
-  it('auto-applies rewards and transitions to TurnComplete on success', () => {
+  it('auto-applies rewards and transitions to ChoosingAction on success (allows optional draw)', () => {
     const result = applyTaskComplete(stateAtCompletingTask(), true)
-    expect(result.turn?.phase).toBe(TurnPhase.TurnComplete)
+    expect(result.turn?.phase).toBe(TurnPhase.ChoosingAction)
     const player = result.players.find((p) => p.id === 'p1')!
     expect(player.abilities[AbilityName.Management]).toBe(1)
     expect(player.abilities[AbilityName.Processing]).toBe(1)
     expect(player.abilities[AbilityName.Communication]).toBe(0)
   })
 
-  it('transitions to TurnComplete on failure without rewards', () => {
+  it('transitions to ChoosingAction on failure without rewards (allows optional draw)', () => {
     const result = applyTaskComplete(stateAtCompletingTask(), false)
-    expect(result.turn?.phase).toBe(TurnPhase.TurnComplete)
+    expect(result.turn?.phase).toBe(TurnPhase.ChoosingAction)
     const player = result.players.find((p) => p.id === 'p1')!
     expect(player.abilities[AbilityName.Management]).toBe(0)
     expect(player.abilities[AbilityName.Processing]).toBe(0)
@@ -223,6 +225,56 @@ describe('applyTaskComplete', () => {
       turn: { ...state.turn!, currentTask: undefined },
     }
     expect(() => applyTaskComplete(broken, true)).toThrow('No task in current turn')
+  })
+})
+
+describe('applyChooseAction — after develop (two-action turn)', () => {
+  function stateAfterDevelop() {
+    let state = makeGameInProgress()
+    state = applyChooseAction(state, TurnAction.DevelopAbility)
+    state = applyChooseAbility(state, AbilityName.Management)
+    state = applyDieRoll(state, { taskNumber: 5, wasRerolled: false, rerollCount: 0 }, testTask)
+    state = applyTaskComplete(state, true)
+    return state // ChoosingAction with currentTask set
+  }
+
+  it('allows DrawFromCosmos after developing', () => {
+    const state = stateAfterDevelop()
+    const result = applyChooseAction(state, TurnAction.DrawFromCosmos)
+    expect(result.turn?.phase).toBe(TurnPhase.DrawingCard)
+  })
+
+  it('rejects DevelopAbility when already developed this turn', () => {
+    const state = stateAfterDevelop()
+    expect(() => applyChooseAction(state, TurnAction.DevelopAbility)).toThrow(
+      'Already developed this turn',
+    )
+  })
+})
+
+describe('canEndTurn', () => {
+  it('returns true when phase is TurnComplete', () => {
+    const turn: TurnState = { activePlayerId: 'p1', phase: TurnPhase.TurnComplete }
+    expect(canEndTurn(turn)).toBe(true)
+  })
+
+  it('returns true when phase is ChoosingAction and develop was done', () => {
+    let state = makeGameInProgress()
+    state = applyChooseAction(state, TurnAction.DevelopAbility)
+    state = applyChooseAbility(state, AbilityName.Management)
+    state = applyDieRoll(state, { taskNumber: 5, wasRerolled: false, rerollCount: 0 }, testTask)
+    state = applyTaskComplete(state, true)
+    expect(canEndTurn(state.turn!)).toBe(true)
+  })
+
+  it('returns false when phase is ChoosingAction at start of turn', () => {
+    const turn: TurnState = { activePlayerId: 'p1', phase: TurnPhase.ChoosingAction }
+    expect(canEndTurn(turn)).toBe(false)
+  })
+
+  it('returns false when phase is CompletingTask', () => {
+    const turn: TurnState = { activePlayerId: 'p1', phase: TurnPhase.CompletingTask }
+    expect(canEndTurn(turn)).toBe(false)
   })
 })
 
