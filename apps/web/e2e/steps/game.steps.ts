@@ -182,6 +182,33 @@ Then('the previously active player should now be waiting', async ({ world }) => 
   })
 })
 
+// === Player passport ===
+
+Then('I should see a passport for each player', async ({ page, world }) => {
+  if (!world.alicePage) throw new Error('Alice page not initialized')
+  const passports = page.getByTestId('player-passport')
+  await expect(passports).toHaveCount(2)
+})
+
+Then('each passport should display 5 ability scores', async ({ page }) => {
+  const passports = page.getByTestId('player-passport')
+  const first = passports.first()
+  await expect(first.getByTestId('ability-score')).toHaveCount(5)
+})
+
+Then("the active player's passport should show updated ability scores", async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const page = world.activePlayerPage
+  const name = world.initialActivePlayerName
+  // Find the passport with the active player's name, wait for score to update
+  const passport = page.getByTestId('player-passport').filter({ hasText: name })
+  await expect(async () => {
+    const texts = await passport.getByTestId('ability-score').allTextContents()
+    const hasNonZero = texts.some((t) => Number.parseInt(t.replace(/\D/g, ''), 10) > 0)
+    expect(hasNonZero).toBe(true)
+  }).toPass({ timeout: 5000 })
+})
+
 // === Event log ===
 
 Then('both players should see a card drawn event', async ({ page, world }) => {

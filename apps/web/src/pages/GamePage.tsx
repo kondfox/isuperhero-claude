@@ -1,17 +1,17 @@
 import { Button } from '../components/Button/Button'
 import { useRoom } from '../context/RoomContext'
-import { TurnPhase } from '../types/game-state'
+import { AbilityName, TurnPhase } from '../types/game-state'
 import styles from './GamePage.module.css'
 
-const ABILITY_LABELS: Record<string, string> = {
-  management: 'Management',
-  communication: 'Communication',
-  orientation: 'Orientation',
-  processing: 'Processing',
-  movementEnergy: 'Movement Energy',
+const ABILITY_LABELS: Record<AbilityName, string> = {
+  [AbilityName.Management]: 'Management',
+  [AbilityName.Communication]: 'Communication',
+  [AbilityName.Orientation]: 'Orientation',
+  [AbilityName.Processing]: 'Processing',
+  [AbilityName.MovementEnergy]: 'Movement Energy',
 }
 
-const ALL_ABILITIES = Object.keys(ABILITY_LABELS)
+const ALL_ABILITIES = Object.keys(ABILITY_LABELS) as AbilityName[]
 
 export function GamePage() {
   const { state, myPlayerId, send } = useRoom()
@@ -36,14 +36,31 @@ export function GamePage() {
     <main className={styles.page} data-testid="game-board">
       <h1>Game Board</h1>
 
-      <div className={styles.playerBar}>
+      <div className={styles.passportRow}>
         {state.players.map((player) => (
-          <span
+          <div
             key={player.id}
-            className={`${styles.playerName} ${player.id === turn.activePlayerId ? styles.activePlayer : ''}`}
+            className={`${styles.passport} ${player.id === turn.activePlayerId ? styles.passportActive : ''}`}
+            data-testid="player-passport"
           >
-            {player.name}
-          </span>
+            <span className={styles.passportName}>{player.name}</span>
+            <div className={styles.abilityBars}>
+              {ALL_ABILITIES.map((ability) => (
+                <div key={ability} className={styles.abilityRow}>
+                  <span className={styles.abilityLabel}>{ABILITY_LABELS[ability]}</span>
+                  <div className={styles.abilityBarTrack}>
+                    <div
+                      className={styles.abilityBarFill}
+                      style={{ width: `${(player.abilities[ability] / 5) * 100}%` }}
+                    />
+                  </div>
+                  <span className={styles.abilityValue} data-testid="ability-score">
+                    {player.abilities[ability]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
 
@@ -108,8 +125,9 @@ export function GamePage() {
           </div>
           <div className={styles.taskCard} data-testid="task-card">
             <p className={styles.taskTitle}>
-              {ABILITY_LABELS[turn.currentTask?.abilityName ?? '']} — Task #
-              {turn.currentTask?.taskNumber}
+              {ABILITY_LABELS[turn.currentTask?.abilityName as AbilityName] ??
+                turn.currentTask?.abilityName}{' '}
+              — Task #{turn.currentTask?.taskNumber}
             </p>
           </div>
           <div className={styles.actions}>

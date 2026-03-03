@@ -11,25 +11,77 @@
   color: var(--color-text-muted);
 }
 
-.playerBar {
+.passportRow {
   display: flex;
   gap: var(--space-3);
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
+  max-width: 700px;
 }
 
-.playerName {
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-sm);
+.passport {
+  flex: 1;
+  min-width: 240px;
+  max-width: 320px;
   background-color: var(--color-bg-surface);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  border: 2px solid transparent;
 }
 
-.activePlayer {
+.passportActive {
+  border-color: var(--color-primary);
+}
+
+.passportName {
+  display: block;
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-2);
+  text-align: center;
+}
+
+.abilityBars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.abilityRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.abilityLabel {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  width: 80px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.abilityBarTrack {
+  flex: 1;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.abilityBarFill {
+  height: 100%;
   background-color: var(--color-primary);
-  color: var(--color-text);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.abilityValue {
+  font-size: var(--font-size-sm);
   font-weight: 600;
+  width: 16px;
+  text-align: center;
 }
 
 .turnIndicator {
