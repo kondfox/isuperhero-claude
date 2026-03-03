@@ -75,7 +75,15 @@ export function GamePage() {
                     data-filled={monster ? 'true' : 'false'}
                     title={monster?.name}
                   >
-                    {monster ? monster.name.charAt(0) : ''}
+                    {monster ? (
+                      <img
+                        src={monster.imageUrl}
+                        alt={monster.name}
+                        className={styles.shipBedImage}
+                      />
+                    ) : (
+                      ''
+                    )}
                   </div>
                 )
               })}
@@ -88,6 +96,7 @@ export function GamePage() {
               {player.bonusCards.length > 0 ? (
                 player.bonusCards.map((card) => (
                   <span key={card.id} className={styles.bonusCard} title={card.description}>
+                    <img src={card.imageUrl} alt={card.name} className={styles.bonusCardImage} />
                     {card.name}
                   </span>
                 ))
@@ -186,8 +195,26 @@ export function GamePage() {
 
       {isMyTurn && hasDrawnCard && turn.phase !== TurnPhase.ChoosingAction && (
         <div className={styles.drawnCard} data-testid="drawn-card">
-          {turn.drawnMonster && <p>Monster: {turn.drawnMonster.name}</p>}
-          {turn.drawnBonus && <p>Bonus: {turn.drawnBonus.name}</p>}
+          {turn.drawnMonster && (
+            <>
+              <img
+                src={turn.drawnMonster.imageUrl}
+                alt={turn.drawnMonster.name}
+                className={styles.drawnCardImage}
+              />
+              <p>Monster: {turn.drawnMonster.name}</p>
+            </>
+          )}
+          {turn.drawnBonus && (
+            <>
+              <img
+                src={turn.drawnBonus.imageUrl}
+                alt={turn.drawnBonus.name}
+                className={styles.drawnCardImage}
+              />
+              <p>Bonus: {turn.drawnBonus.name}</p>
+            </>
+          )}
           {turn.battleResult && (
             <>
               <div className={styles.battleComparison} data-testid="battle-comparison">

@@ -109,6 +109,13 @@
   color: var(--color-text-muted);
 }
 
+.shipBedImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
 .shipBedFilled {
   border-style: solid;
   border-color: var(--color-warning);
@@ -126,11 +133,21 @@
 }
 
 .bonusCard {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 11px;
   padding: 2px var(--space-2);
   border-radius: var(--radius-sm);
   background-color: rgba(156, 39, 176, 0.15);
   color: var(--color-secondary);
+}
+
+.bonusCardImage {
+  width: 20px;
+  height: 20px;
+  object-fit: cover;
+  border-radius: 2px;
 }
 
 .bonusTrayEmpty {
@@ -229,6 +246,12 @@
   padding: var(--space-4);
   min-width: 240px;
   text-align: center;
+}
+
+.drawnCardImage {
+  max-width: 200px;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
 }
 
 .battleComparison {
