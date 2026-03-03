@@ -60,6 +60,22 @@ export function GamePage() {
                 </div>
               ))}
             </div>
+            <div className={styles.shipBeds}>
+              {[0, 1, 2].map((i) => {
+                const monster = player.monstersTamed[i]
+                return (
+                  <div
+                    key={i}
+                    className={`${styles.shipBed} ${monster ? styles.shipBedFilled : ''}`}
+                    data-testid="ship-bed"
+                    data-filled={monster ? 'true' : 'false'}
+                    title={monster?.name}
+                  >
+                    {monster ? monster.name.charAt(0) : ''}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         ))}
       </div>
