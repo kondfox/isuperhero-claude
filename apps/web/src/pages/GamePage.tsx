@@ -168,10 +168,9 @@ export function GamePage() {
             Rolled: {turn.dieRoll?.taskNumber}
           </div>
           <div className={styles.taskCard} data-testid="task-card">
-            <p className={styles.taskTitle}>
-              {ABILITY_LABELS[turn.currentTask?.abilityName as AbilityName] ??
-                turn.currentTask?.abilityName}{' '}
-              — Task #{turn.currentTask?.taskNumber}
+            <p className={styles.taskTitle} data-testid="task-title">
+              {turn.currentTask?.title ||
+                `${ABILITY_LABELS[turn.currentTask?.abilityName as AbilityName] ?? turn.currentTask?.abilityName} — Task #${turn.currentTask?.taskNumber}`}
             </p>
             <span className={styles.taskType} data-testid="task-type">
               {turn.currentTask?.taskType === 'digital' ? 'Digital' : 'Non-Digital'}
@@ -183,6 +182,19 @@ export function GamePage() {
                 </span>
               ))}
             </div>
+            {turn.currentTask?.requirements && (
+              <p className={styles.taskRequirements} data-testid="task-requirements">
+                {turn.currentTask.requirements}
+              </p>
+            )}
+            {turn.currentTask?.instructions && (
+              <div
+                className={styles.taskInstructions}
+                data-testid="task-instructions"
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted server data from tasks-data.ts, never user input
+                dangerouslySetInnerHTML={{ __html: turn.currentTask.instructions }}
+              />
+            )}
           </div>
           <div className={styles.actions}>
             <Button onClick={() => send('taskComplete', { success: true })}>Task Complete</Button>

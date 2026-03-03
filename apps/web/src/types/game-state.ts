@@ -45,6 +45,9 @@ export interface ClientTurnState {
     taskNumber: number
     rewards: string[]
     taskType: string
+    title: string
+    instructions: string
+    requirements: string
   }
   drawnMonster?: MonsterCard
   drawnBonus?: BonusCard

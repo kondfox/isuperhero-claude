@@ -162,6 +162,9 @@ function extractTask(raw: unknown): NonNullable<NonNullable<GameSnapshot['turn']
     taskNumber: Number(t.taskNumber ?? 0),
     rewards: extractStringArray(t.rewards),
     taskType: String(t.taskType ?? ''),
+    title: String(t.title ?? ''),
+    instructions: String(t.instructions ?? ''),
+    requirements: String(t.requirements ?? ''),
   }
 }
 

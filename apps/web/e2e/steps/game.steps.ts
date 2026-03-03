@@ -304,6 +304,22 @@ Then('the task card should show the rewards', async ({ world }) => {
   expect(count).toBeGreaterThanOrEqual(1)
 })
 
+Then('the task card should show the task title', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const title = world.activePlayerPage.getByTestId('task-title')
+  await expect(title).toBeVisible()
+  const text = await title.textContent()
+  expect(text?.trim().length).toBeGreaterThan(0)
+})
+
+Then('the task card should show the task instructions', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const instructions = world.activePlayerPage.getByTestId('task-instructions')
+  await expect(instructions).toBeVisible()
+  const html = await instructions.innerHTML()
+  expect(html.trim().length).toBeGreaterThan(0)
+})
+
 // === Bonus card tray ===
 
 Then('each passport should show a bonus card tray', async ({ page }) => {
