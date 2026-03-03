@@ -11,6 +11,11 @@
   color: var(--color-text-muted);
 }
 
+.cosmosDeck {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
 .passportRow {
   display: flex;
   gap: var(--space-3);

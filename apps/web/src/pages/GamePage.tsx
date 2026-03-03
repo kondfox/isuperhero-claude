@@ -36,6 +36,10 @@ export function GamePage() {
     <main className={styles.page} data-testid="game-board">
       <h1>Game Board</h1>
 
+      <div className={styles.cosmosDeck}>
+        Cosmos Deck: <span data-testid="cosmos-deck-count">{state.cosmosDeckSize}</span>
+      </div>
+
       <div className={styles.passportRow}>
         {state.players.map((player) => (
           <div
