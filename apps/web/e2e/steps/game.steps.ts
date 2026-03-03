@@ -304,6 +304,22 @@ Then('the task card should show the rewards', async ({ world }) => {
   expect(count).toBeGreaterThanOrEqual(1)
 })
 
+// === Bonus card tray ===
+
+Then('each passport should show a bonus card tray', async ({ page }) => {
+  const passports = page.getByTestId('player-passport')
+  const first = passports.first()
+  await expect(first.getByTestId('bonus-tray')).toBeVisible()
+})
+
+Then('all bonus trays should be empty at the start', async ({ page }) => {
+  const trays = page.getByTestId('bonus-tray')
+  const count = await trays.count()
+  for (let i = 0; i < count; i++) {
+    await expect(trays.nth(i)).toHaveAttribute('data-empty', 'true')
+  }
+})
+
 // === Cosmos deck ===
 
 Then('the game board should show the cosmos deck count', async ({ page }) => {

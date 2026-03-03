@@ -76,6 +76,21 @@ export function GamePage() {
                 )
               })}
             </div>
+            <div
+              className={styles.bonusTray}
+              data-testid="bonus-tray"
+              data-empty={player.bonusCards.length === 0 ? 'true' : 'false'}
+            >
+              {player.bonusCards.length > 0 ? (
+                player.bonusCards.map((card) => (
+                  <span key={card.id} className={styles.bonusCard} title={card.description}>
+                    {card.name}
+                  </span>
+                ))
+              ) : (
+                <span className={styles.bonusTrayEmpty}>No bonus cards</span>
+              )}
+            </div>
           </div>
         ))}
       </div>
