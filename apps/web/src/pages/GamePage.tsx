@@ -145,6 +145,16 @@ export function GamePage() {
                 turn.currentTask?.abilityName}{' '}
               — Task #{turn.currentTask?.taskNumber}
             </p>
+            <span className={styles.taskType} data-testid="task-type">
+              {turn.currentTask?.taskType === 'digital' ? 'Digital' : 'Non-Digital'}
+            </span>
+            <div className={styles.taskRewards}>
+              {turn.currentTask?.rewards.map((r) => (
+                <span key={r} className={styles.taskReward} data-testid="task-reward">
+                  {ABILITY_LABELS[r as AbilityName] ?? r}
+                </span>
+              ))}
+            </div>
           </div>
           <div className={styles.actions}>
             <Button onClick={() => send('taskComplete', { success: true })}>Task Complete</Button>
