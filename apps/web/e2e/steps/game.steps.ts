@@ -290,6 +290,32 @@ Then('all ship beds should be empty at the start', async ({ page }) => {
   }
 })
 
+// === Task card content ===
+
+Then('the task card should show the task type', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  await expect(world.activePlayerPage.getByTestId('task-type')).toBeVisible()
+})
+
+Then('the task card should show the rewards', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const rewards = world.activePlayerPage.getByTestId('task-reward')
+  const count = await rewards.count()
+  expect(count).toBeGreaterThanOrEqual(1)
+})
+
+// === Cosmos deck ===
+
+Then('the game board should show the cosmos deck count', async ({ page }) => {
+  await expect(page.getByTestId('cosmos-deck-count')).toBeVisible()
+})
+
+Then('the cosmos deck count should be a positive number', async ({ page }) => {
+  const text = await page.getByTestId('cosmos-deck-count').textContent()
+  const num = Number.parseInt(text?.replace(/\D/g, '') ?? '0', 10)
+  expect(num).toBeGreaterThan(0)
+})
+
 // === Event log ===
 
 Then('both players should see a card drawn event', async ({ page, world }) => {
