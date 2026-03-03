@@ -209,6 +209,22 @@ Then("the active player's passport should show updated ability scores", async ({
   }).toPass({ timeout: 5000 })
 })
 
+// === Ship beds ===
+
+Then('each passport should show 3 ship beds', async ({ page }) => {
+  const passports = page.getByTestId('player-passport')
+  const first = passports.first()
+  await expect(first.getByTestId('ship-bed')).toHaveCount(3)
+})
+
+Then('all ship beds should be empty at the start', async ({ page }) => {
+  const beds = page.getByTestId('ship-bed')
+  const count = await beds.count()
+  for (let i = 0; i < count; i++) {
+    await expect(beds.nth(i)).toHaveAttribute('data-filled', 'false')
+  }
+})
+
 // === Event log ===
 
 Then('both players should see a card drawn event', async ({ page, world }) => {
