@@ -221,6 +221,57 @@ describe('syncToSchema', () => {
     expect(schema.turn?.currentTask?.rewards.at(0)).toBe(AbilityName.Management)
   })
 
+  it('syncs task title, instructions, and requirements', () => {
+    const task = makeTask()
+    task.requirements = { ru: 'Нужен компьютер' }
+    const turn: TurnState = {
+      activePlayerId: 'p1',
+      phase: TurnPhase.CompletingTask,
+      chosenAction: TurnAction.DevelopAbility,
+      chosenAbility: AbilityName.Management,
+      dieRoll: { taskNumber: 1, wasRerolled: false, rerollCount: 0 },
+      currentTask: task,
+    }
+    const state = makeGameState({ turn })
+    const schema = new GameStateSchema()
+    syncToSchema(state, schema)
+    expect(schema.turn?.currentTask?.title).toBe('Взломай код')
+    expect(schema.turn?.currentTask?.instructions).toBe('<p>Level 1</p>')
+    expect(schema.turn?.currentTask?.requirements).toBe('Нужен компьютер')
+  })
+
+  it('resolves instructions by active player difficulty level', () => {
+    const turn: TurnState = {
+      activePlayerId: 'p1',
+      phase: TurnPhase.CompletingTask,
+      chosenAction: TurnAction.DevelopAbility,
+      chosenAbility: AbilityName.Management,
+      dieRoll: { taskNumber: 1, wasRerolled: false, rerollCount: 0 },
+      currentTask: makeTask(),
+    }
+    const p1 = makePlayer('p1', 'Alice')
+    p1.difficultyLevel = DifficultyLevel.Level2
+    const state = makeGameState({ turn, players: [p1, makePlayer('p2', 'Bob')] })
+    const schema = new GameStateSchema()
+    syncToSchema(state, schema)
+    expect(schema.turn?.currentTask?.instructions).toBe('<p>Level 2</p>')
+  })
+
+  it('defaults requirements to empty string when absent', () => {
+    const turn: TurnState = {
+      activePlayerId: 'p1',
+      phase: TurnPhase.CompletingTask,
+      chosenAction: TurnAction.DevelopAbility,
+      chosenAbility: AbilityName.Management,
+      dieRoll: { taskNumber: 1, wasRerolled: false, rerollCount: 0 },
+      currentTask: makeTask(),
+    }
+    const state = makeGameState({ turn })
+    const schema = new GameStateSchema()
+    syncToSchema(state, schema)
+    expect(schema.turn?.currentTask?.requirements).toBe('')
+  })
+
   it('clears turn when null', () => {
     const state = makeGameState({ turn: null })
     const schema = new GameStateSchema()

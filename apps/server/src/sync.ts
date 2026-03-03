@@ -53,13 +53,16 @@ function syncBonusCard(source: BonusCard): BonusCardSchema {
   return schema
 }
 
-function syncTask(source: TaskDefinition): TaskSchema {
+function syncTask(source: TaskDefinition, difficultyLevel: number): TaskSchema {
   const schema = new TaskSchema()
   schema.id = source.id
   schema.abilityName = source.abilityName
   schema.taskNumber = source.taskNumber
   schema.rewards = new ArraySchema<string>(...source.rewards)
   schema.taskType = source.taskType
+  schema.title = source.title.ru ?? ''
+  schema.instructions = source.levels[String(difficultyLevel)]?.ru ?? ''
+  schema.requirements = source.requirements?.ru ?? ''
   return schema
 }
 
@@ -92,7 +95,7 @@ function syncPlayer(source: PlayerState): PlayerSchema {
   return schema
 }
 
-function syncTurn(source: TurnState): TurnSchema {
+function syncTurn(source: TurnState, difficultyLevel: number): TurnSchema {
   const schema = new TurnSchema()
   schema.activePlayerId = source.activePlayerId
   schema.phase = source.phase
@@ -110,7 +113,7 @@ function syncTurn(source: TurnState): TurnSchema {
     schema.dieRoll.rerollCount = source.dieRoll.rerollCount
   }
   if (source.currentTask) {
-    schema.currentTask = syncTask(source.currentTask)
+    schema.currentTask = syncTask(source.currentTask, difficultyLevel)
   }
   if (source.drawnCard && source.drawnCardType) {
     schema.drawnCardType = source.drawnCardType
@@ -156,7 +159,9 @@ export function syncToSchema(state: GameState, schema: GameStateSchema): void {
 
   // Turn
   if (state.turn) {
-    schema.turn = syncTurn(state.turn)
+    const activePlayer = state.players.find((p) => p.id === state.turn?.activePlayerId)
+    const difficultyLevel = activePlayer?.difficultyLevel ?? 1
+    schema.turn = syncTurn(state.turn, difficultyLevel)
   } else {
     schema.turn = undefined
   }

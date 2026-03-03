@@ -85,6 +85,9 @@ export class TaskSchema extends Schema {
   declare taskNumber: number
   declare rewards: ArraySchema<string>
   declare taskType: string
+  declare title: string
+  declare instructions: string
+  declare requirements: string
 
   constructor() {
     super()
@@ -93,6 +96,9 @@ export class TaskSchema extends Schema {
     this.taskNumber = 0
     this.rewards = new ArraySchema<string>()
     this.taskType = ''
+    this.title = ''
+    this.instructions = ''
+    this.requirements = ''
   }
 }
 defineTypes(TaskSchema, {
@@ -101,6 +107,9 @@ defineTypes(TaskSchema, {
   taskNumber: 'uint8',
   rewards: ['string'],
   taskType: 'string',
+  title: 'string',
+  instructions: 'string',
+  requirements: 'string',
 })
 
 export class DieRollSchema extends Schema {

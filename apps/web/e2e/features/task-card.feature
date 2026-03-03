@@ -11,3 +11,11 @@ Feature: Task Card Content
     Then the active player should see the task card
     And the task card should show the task type
     And the task card should show the rewards
+
+  Scenario: Task card shows title and instructions
+    When the active player clicks the "Develop Ability" button
+    And the active player chooses the "Management" ability
+    And the active player clicks the "Roll Die" button
+    Then the active player should see the task card
+    And the task card should show the task title
+    And the task card should show the task instructions
