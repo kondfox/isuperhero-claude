@@ -209,6 +209,71 @@ Then("the active player's passport should show updated ability scores", async ({
   }).toPass({ timeout: 5000 })
 })
 
+// === Battle comparison ===
+
+When('the active player draws until a monster appears', async ({ page, world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const pageA = world.alicePage!
+  const pageB = page
+
+  // Keep drawing across turns until a monster card appears (with battle comparison)
+  for (let attempt = 0; attempt < 10; attempt++) {
+    // Determine who is currently active by checking both pages
+    const textA = await pageA.getByTestId('turn-indicator').textContent()
+    const currentActive = textA?.includes('Your turn') ? pageA : pageB
+    const currentInactive = currentActive === pageA ? pageB : pageA
+
+    // Click Draw from Cosmos
+    const drawBtn = currentActive.getByRole('button', { name: 'Draw from Cosmos' })
+    await expect(drawBtn).toBeVisible({ timeout: 5000 })
+    await drawBtn.click()
+
+    // Wait for draw to resolve
+    const endTurnBtn = currentActive.getByRole('button', { name: 'End Turn' })
+    const penaltySec = currentActive.getByTestId('battle-defeat-penalty')
+    await Promise.race([
+      endTurnBtn.waitFor({ state: 'visible', timeout: 10000 }),
+      penaltySec.waitFor({ state: 'visible', timeout: 10000 }),
+    ])
+
+    // Check if a monster was drawn (drawn-card section with battle result)
+    const drawnCard = currentActive.getByTestId('drawn-card')
+    const hasMonster = await drawnCard
+      .getByText(/Monster:/i)
+      .isVisible()
+      .catch(() => false)
+    if (hasMonster) {
+      // Found a monster! Update world so the assertions use the right page
+      world.activePlayerPage = currentActive
+      world.inactivePlayerPage = currentInactive
+      return
+    }
+
+    // Bonus card — resolve penalty if needed, then end turn
+    if (await penaltySec.isVisible()) {
+      await penaltySec.getByRole('button').first().click()
+    }
+    await endTurnBtn.waitFor({ state: 'visible', timeout: 5000 })
+    await endTurnBtn.click()
+
+    // Wait for turn to advance
+    await expect(currentInactive.getByText('Your turn')).toBeVisible({ timeout: 5000 })
+  }
+
+  throw new Error('No monster drawn after 10 attempts')
+})
+
+Then('the active player should see the battle comparison', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  await expect(world.activePlayerPage.getByTestId('battle-comparison')).toBeVisible()
+})
+
+Then('the battle comparison should show 5 ability matchups', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const comparison = world.activePlayerPage.getByTestId('battle-comparison')
+  await expect(comparison.getByTestId('battle-matchup')).toHaveCount(5)
+})
+
 // === Ship beds ===
 
 Then('each passport should show 3 ship beds', async ({ page }) => {

@@ -178,6 +178,41 @@
   text-align: center;
 }
 
+.battleComparison {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: var(--space-2) 0;
+}
+
+.battleMatchup {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+}
+
+.matchupWin {
+  background-color: rgba(76, 175, 80, 0.15);
+}
+
+.matchupLose {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.matchupScore {
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+}
+
+.matchupLabel {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
 .victory {
   color: var(--color-success);
   font-weight: 700;

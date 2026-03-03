@@ -165,6 +165,20 @@ function extractTask(raw: unknown): NonNullable<NonNullable<GameSnapshot['turn']
   }
 }
 
+function extractMapEntries(source: unknown): Array<[string, unknown]> {
+  if (!source || typeof source !== 'object') return []
+  // Colyseus MapSchema has a forEach(callback, thisArg) method
+  const map = source as { forEach?: (cb: (val: unknown, key: string) => void) => void }
+  if (typeof map.forEach === 'function') {
+    const entries: Array<[string, unknown]> = []
+    map.forEach((val: unknown, key: string) => {
+      entries.push([key, val])
+    })
+    return entries
+  }
+  return Object.entries(source as Record<string, unknown>)
+}
+
 function extractBattleResult(
   raw: unknown,
 ): NonNullable<NonNullable<GameSnapshot['turn']>['battleResult']> {
@@ -174,7 +188,7 @@ function extractBattleResult(
     { playerScore: number; monsterScore: number; playerWins: boolean }
   > = {}
   if (b.comparisons && typeof b.comparisons === 'object') {
-    for (const [key, val] of Object.entries(b.comparisons as Record<string, unknown>)) {
+    for (const [key, val] of extractMapEntries(b.comparisons)) {
       const c = val as Record<string, unknown>
       comparisons[key] = {
         playerScore: Number(c.playerScore ?? 0),

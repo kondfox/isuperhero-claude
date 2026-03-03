@@ -160,9 +160,28 @@ export function GamePage() {
           {turn.drawnMonster && <p>Monster: {turn.drawnMonster.name}</p>}
           {turn.drawnBonus && <p>Bonus: {turn.drawnBonus.name}</p>}
           {turn.battleResult && (
-            <p className={turn.battleResult.victory ? styles.victory : styles.defeat}>
-              {turn.battleResult.victory ? 'Victory! Monster tamed!' : 'Defeat!'}
-            </p>
+            <>
+              <div className={styles.battleComparison} data-testid="battle-comparison">
+                {ALL_ABILITIES.map((ability) => {
+                  const matchup = turn.battleResult?.comparisons[ability]
+                  if (!matchup) return null
+                  return (
+                    <div
+                      key={ability}
+                      className={`${styles.battleMatchup} ${matchup.playerWins ? styles.matchupWin : styles.matchupLose}`}
+                      data-testid="battle-matchup"
+                    >
+                      <span className={styles.matchupScore}>{matchup.playerScore}</span>
+                      <span className={styles.matchupLabel}>{ABILITY_LABELS[ability]}</span>
+                      <span className={styles.matchupScore}>{matchup.monsterScore}</span>
+                    </div>
+                  )
+                })}
+              </div>
+              <p className={turn.battleResult.victory ? styles.victory : styles.defeat}>
+                {turn.battleResult.victory ? 'Victory! Monster tamed!' : 'Defeat!'}
+              </p>
+            </>
           )}
         </div>
       )}
