@@ -20,6 +20,7 @@ services:
     image: ${APP_IMAGE}
     restart: unless-stopped
     ports:
+      - '80:2567'
       - '2567:2567'
     environment:
       PORT: '2567'

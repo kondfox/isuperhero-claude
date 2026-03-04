@@ -78,6 +78,10 @@ jobs:
           script: |
             cd /opt/isuperhero
 
+            # Stop nginx if running (frees port 80 for the app)
+            systemctl stop nginx 2>/dev/null || true
+            systemctl disable nginx 2>/dev/null || true
+
             # Use the stage compose file
             mv -f docker-compose.stage.yml docker-compose.yml
 
