@@ -12,7 +12,16 @@ import type { GameSnapshot } from '../types/game-state'
 import { generateRoomCode } from '../utils/room-code'
 import { schemaToSnapshot } from '../utils/schema-to-snapshot'
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:2567'
+function getWsUrl(): string {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL
+  if (import.meta.env.PROD && typeof window !== 'undefined') {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    return `${proto}//${window.location.host}`
+  }
+  return 'ws://localhost:2567'
+}
+
+const WS_URL = getWsUrl()
 
 export interface CreateRoomOptions {
   name: string
