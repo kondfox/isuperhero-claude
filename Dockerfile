@@ -27,7 +27,7 @@ COPY --from=build /app/apps/web/package.json ./apps/web/
 COPY --from=build /app/packages/types/package.json ./packages/types/
 COPY --from=build /app/packages/game-logic/package.json ./packages/game-logic/
 COPY --from=build /app/packages/game-data/package.json ./packages/game-data/
-RUN bun install --frozen-lockfile --production
+RUN bun install --frozen-lockfile --production --ignore-scripts
 
 # Server source + workspace packages (Colyseus can't be bundled, run source directly)
 COPY --from=build /app/apps/server/src/ ./apps/server/src/
