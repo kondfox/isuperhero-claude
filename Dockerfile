@@ -18,12 +18,19 @@ RUN cd apps/web && bun run build
 FROM oven/bun:1-slim AS runtime
 WORKDIR /app
 
-# Dependencies
-COPY --from=deps /app/node_modules/ ./node_modules/
+# Copy package manifests and lockfile, then install production deps.
+# Bun workspaces use symlinks in per-workspace node_modules that Docker COPY
+# doesn't preserve, so we must run bun install in the runtime stage.
+COPY --from=build /app/package.json /app/bun.lock ./
+COPY --from=build /app/apps/server/package.json ./apps/server/
+COPY --from=build /app/apps/web/package.json ./apps/web/
+COPY --from=build /app/packages/types/package.json ./packages/types/
+COPY --from=build /app/packages/game-logic/package.json ./packages/game-logic/
+COPY --from=build /app/packages/game-data/package.json ./packages/game-data/
+RUN bun install --frozen-lockfile --production
 
 # Server source + workspace packages (Colyseus can't be bundled, run source directly)
 COPY --from=build /app/apps/server/src/ ./apps/server/src/
-COPY --from=build /app/apps/server/package.json ./apps/server/
 COPY --from=build /app/packages/ ./packages/
 
 # Web static files
