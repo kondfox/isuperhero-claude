@@ -67,6 +67,9 @@ function extractPlayer(raw: unknown): GameSnapshot['players'][number] {
     abilities: extractAbilities(p.abilities),
     monstersTamed: extractArray(p.monstersTamed, extractMonsterCard),
     bonusCards: extractArray(p.bonusCards, extractBonusCard),
+    bonusCardsUsed: Number(p.bonusCardsUsed ?? 0),
+    hasExtraRoll: Boolean(p.hasExtraRoll ?? false),
+    hasShield: Boolean(p.hasShield ?? false),
     connected: Boolean(p.connected ?? true),
     ready: Boolean(p.ready ?? false),
   }

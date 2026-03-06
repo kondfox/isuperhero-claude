@@ -18,6 +18,9 @@ export function HomePage() {
           <Link to="/lobby?mode=join">Join Room</Link>
         </Button>
       </div>
+      <Link to="/leaderboard" className={styles.leaderboardLink} aria-label="View leaderboard">
+        Leaderboard
+      </Link>
     </main>
   )
 }

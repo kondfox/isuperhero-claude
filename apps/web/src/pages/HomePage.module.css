@@ -28,3 +28,13 @@
   display: flex;
   gap: var(--space-4);
 }
+
+.leaderboardLink {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  transition: color var(--transition-fast);
+}
+
+.leaderboardLink:hover {
+  color: var(--color-text);
+}
