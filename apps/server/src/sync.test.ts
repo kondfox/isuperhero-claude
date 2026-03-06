@@ -67,6 +67,9 @@ function makePlayer(id = 'p1', name = 'Alice'): PlayerState {
     abilities: { ...createInitialAbilities(), management: 2 },
     monstersTamed: [makeMonster()],
     bonusCards: [makeBonus()],
+    bonusCardsUsed: 0,
+    hasExtraRoll: false,
+    hasShield: false,
     connected: true,
     ready: true,
   }

@@ -5,6 +5,7 @@ import {
   advanceToNextPlayer,
   applyBattleDefeatPenalty,
   applyBattleOutcome,
+  applyBonusCardEffect,
   applyChooseAbility,
   applyChooseAction,
   applyDieRoll,
@@ -17,8 +18,7 @@ import {
   createPlayer,
   createTurn,
   drawCard,
-  getCardType,
-  isMonsterCard,
+  getGameSummary,
   isValidAbilityChoice,
   markTaskRolled,
   removePlayerFromGame,
@@ -29,6 +29,7 @@ import {
 } from '@isuperhero/game-logic'
 import type {
   BonusCard,
+  BonusCardParams,
   GameState,
   MonsterCard,
   RoomSettings,
@@ -46,6 +47,8 @@ import {
 } from '@isuperhero/types'
 import type { Client } from 'colyseus'
 import { Room } from 'colyseus'
+import { getDb } from '../db/index'
+import { gameParticipants, gameRecords } from '../db/schema'
 import { GameStateSchema } from '../schemas/index'
 import { syncToSchema } from '../sync'
 
@@ -149,6 +152,9 @@ export class GameRoom extends Room<GameStateSchema> {
     })
     this.onMessage('endTurn', (client) => {
       this.handleEndTurn(client)
+    })
+    this.onMessage('useBonusCard', (client, data: { cardId: string; params?: BonusCardParams }) => {
+      this.handleUseBonusCard(client, data.cardId, data.params)
     })
   }
 
@@ -361,6 +367,16 @@ export class GameRoom extends Room<GameStateSchema> {
     }
   }
 
+  private handleUseBonusCard(client: Client, cardId: string, params?: BonusCardParams): void {
+    try {
+      this.validateActivePlayer(client)
+      this.gameState = applyBonusCardEffect(this.gameState, client.sessionId, cardId, params)
+      this.sync()
+    } catch (err) {
+      client.send('error', { message: (err as Error).message })
+    }
+  }
+
   private checkGameOver(): void {
     const winnerId = checkGameOver(this.gameState)
     if (winnerId) {
@@ -370,7 +386,42 @@ export class GameRoom extends Room<GameStateSchema> {
         winnerId,
       }
       this.sync()
+      this.persistGameResult().catch((err) => {
+        console.error('[iSuperhero] Failed to persist game result:', err)
+      })
     }
+  }
+
+  private async persistGameResult(): Promise<void> {
+    if (!process.env.DATABASE_URL) return
+
+    const summary = getGameSummary(this.gameState)
+    const db = getDb()
+
+    await db.transaction(async (tx) => {
+      const [record] = await tx
+        .insert(gameRecords)
+        .values({
+          roomCode: this.gameState.roomSettings.roomCode,
+          startedAt: new Date(),
+          finishedAt: new Date(),
+          winnerId: summary.winnerId,
+          totalTurns: summary.totalTurns,
+          settings: this.gameState.roomSettings,
+        })
+        .returning()
+
+      for (const [index, ranking] of summary.playerRankings.entries()) {
+        await tx.insert(gameParticipants).values({
+          gameId: record.id,
+          playerId: ranking.playerId,
+          finalRank: index + 1,
+          monstersTamed: ranking.monstersCount,
+          totalAbilityScore: ranking.totalAbilityScore,
+          bonusCardsUsed: ranking.bonusCardsUsed,
+        })
+      }
+    })
   }
 
   private sync(): void {

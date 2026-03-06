@@ -1,5 +1,5 @@
 import { ArraySchema, MapSchema } from '@colyseus/schema'
-import { isMonsterCard } from '@isuperhero/game-logic'
+import { getGameSummary, isMonsterCard } from '@isuperhero/game-logic'
 import type {
   BattleResult,
   BonusCard,
@@ -19,9 +19,10 @@ import {
   DieRollSchema,
   GameEventSchema,
   type GameStateSchema,
+  GameSummarySchema,
   MonsterCardSchema,
+  PlayerRankingSchema,
   PlayerSchema,
-  RoomSettingsSchema,
   TaskSchema,
   TurnSchema,
 } from './schemas/index'
@@ -90,6 +91,9 @@ function syncPlayer(source: PlayerState): PlayerSchema {
     ...source.monstersTamed.map(syncMonsterCard),
   )
   schema.bonusCards = new ArraySchema<BonusCardSchema>(...source.bonusCards.map(syncBonusCard))
+  schema.bonusCardsUsed = source.bonusCardsUsed
+  schema.hasExtraRoll = source.hasExtraRoll
+  schema.hasShield = source.hasShield
   schema.connected = source.connected
   schema.ready = source.ready
   return schema
@@ -177,4 +181,26 @@ export function syncToSchema(state: GameState, schema: GameStateSchema): void {
   schema.roomSettings.taskTimeLimitSeconds = state.roomSettings.taskTimeLimitSeconds
   schema.roomSettings.roomName = state.roomSettings.roomName
   schema.roomSettings.roomCode = state.roomSettings.roomCode
+
+  // Game summary (when game is finished)
+  if (state.winnerId) {
+    const summary = getGameSummary(state)
+    const summarySchema = new GameSummarySchema()
+    summarySchema.winnerId = summary.winnerId
+    summarySchema.winnerName = summary.winnerName
+    summarySchema.totalTurns = summary.totalTurns
+    summarySchema.playerRankings = new ArraySchema<PlayerRankingSchema>()
+    for (const ranking of summary.playerRankings) {
+      const rankSchema = new PlayerRankingSchema()
+      rankSchema.playerId = ranking.playerId
+      rankSchema.name = ranking.name
+      rankSchema.monstersCount = ranking.monstersCount
+      rankSchema.totalAbilityScore = ranking.totalAbilityScore
+      rankSchema.bonusCardsUsed = ranking.bonusCardsUsed
+      summarySchema.playerRankings.push(rankSchema)
+    }
+    schema.gameSummary = summarySchema
+  } else {
+    schema.gameSummary = undefined
+  }
 }

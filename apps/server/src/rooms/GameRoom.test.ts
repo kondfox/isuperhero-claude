@@ -1,13 +1,5 @@
-import { createInitialAbilities } from '@isuperhero/game-logic'
-import type { BonusCard, GameState, MonsterCard } from '@isuperhero/types'
-import {
-  AbilityName,
-  CardType,
-  DifficultyLevel,
-  GamePhase,
-  TurnAction,
-  TurnPhase,
-} from '@isuperhero/types'
+import type { GameState } from '@isuperhero/types'
+import { AbilityName, DifficultyLevel, GamePhase, TurnAction, TurnPhase } from '@isuperhero/types'
 import { describe, expect, it, vi } from 'vitest'
 import { GameStateSchema } from '../schemas/index'
 import { GameRoom } from './GameRoom'
@@ -279,7 +271,7 @@ describe('GameRoom', () => {
     })
 
     it('taskComplete success → ChoosingAction (allows optional draw)', () => {
-      const { room, activeClient, activeId } = setupGameInProgress()
+      const { room, activeClient } = setupGameInProgress()
       sendMessage(room, 'chooseAction', activeClient, { action: TurnAction.DevelopAbility })
       sendMessage(room, 'chooseAbility', activeClient, { ability: AbilityName.Management })
       sendMessage(room, 'rollDie', activeClient)
