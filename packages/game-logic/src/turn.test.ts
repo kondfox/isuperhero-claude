@@ -25,6 +25,7 @@ import {
   applyTaskComplete,
   canEndTurn,
   createTurn,
+  drawFromCosmosDeck,
 } from './turn'
 
 const defaultSettings = {
@@ -69,6 +70,17 @@ const testTask = {
     '3': { ru: '<p>Сделай что-нибудь</p>', en: '<p>Do something</p>' },
   },
   taskType: TaskType.NonDigital,
+}
+
+function getPlayer(state: GameState, id: string) {
+  const player = state.players.find((p) => p.id === id)
+  if (!player) throw new Error(`Player ${id} not found in test`)
+  return player
+}
+
+function getTurn(state: GameState) {
+  if (!state.turn) throw new Error('Turn is null in test')
+  return state.turn
 }
 
 function makeGameInProgress(): GameState {
@@ -126,6 +138,12 @@ describe('advanceToNextPlayer', () => {
     const state = { ...makeGameInProgress(), turnOrder: [] }
     expect(() => advanceToNextPlayer(state)).toThrow('No players in turn order')
   })
+
+  it('is a no-op when game phase is Finished', () => {
+    const state = { ...makeGameInProgress(), phase: GamePhase.Finished }
+    const result = advanceToNextPlayer(state)
+    expect(result).toBe(state)
+  })
 })
 
 describe('applyChooseAction — Develop Ability', () => {
@@ -138,7 +156,7 @@ describe('applyChooseAction — Develop Ability', () => {
 
   it('throws on wrong phase', () => {
     const state = makeGameInProgress()
-    state.turn = { ...state.turn!, phase: TurnPhase.RollingDie }
+    state.turn = { ...getTurn(state), phase: TurnPhase.RollingDie }
     expect(() => applyChooseAction(state, TurnAction.DevelopAbility)).toThrow('Expected phase')
   })
 
@@ -198,7 +216,7 @@ describe('applyTaskComplete', () => {
   it('auto-applies rewards and transitions to ChoosingAction on success (allows optional draw)', () => {
     const result = applyTaskComplete(stateAtCompletingTask(), true)
     expect(result.turn?.phase).toBe(TurnPhase.ChoosingAction)
-    const player = result.players.find((p) => p.id === 'p1')!
+    const player = getPlayer(result, 'p1')
     expect(player.abilities[AbilityName.Management]).toBe(1)
     expect(player.abilities[AbilityName.Processing]).toBe(1)
     expect(player.abilities[AbilityName.Communication]).toBe(0)
@@ -207,7 +225,7 @@ describe('applyTaskComplete', () => {
   it('transitions to ChoosingAction on failure without rewards (allows optional draw)', () => {
     const result = applyTaskComplete(stateAtCompletingTask(), false)
     expect(result.turn?.phase).toBe(TurnPhase.ChoosingAction)
-    const player = result.players.find((p) => p.id === 'p1')!
+    const player = getPlayer(result, 'p1')
     expect(player.abilities[AbilityName.Management]).toBe(0)
     expect(player.abilities[AbilityName.Processing]).toBe(0)
   })
@@ -222,7 +240,7 @@ describe('applyTaskComplete', () => {
     const state = stateAtCompletingTask()
     const broken = {
       ...state,
-      turn: { ...state.turn!, currentTask: undefined },
+      turn: { ...getTurn(state), currentTask: undefined },
     }
     expect(() => applyTaskComplete(broken, true)).toThrow('No task in current turn')
   })
@@ -264,7 +282,7 @@ describe('canEndTurn', () => {
     state = applyChooseAbility(state, AbilityName.Management)
     state = applyDieRoll(state, { taskNumber: 5, wasRerolled: false, rerollCount: 0 }, testTask)
     state = applyTaskComplete(state, true)
-    expect(canEndTurn(state.turn!)).toBe(true)
+    expect(canEndTurn(getTurn(state))).toBe(true)
   })
 
   it('returns false when phase is ChoosingAction at start of turn', () => {
@@ -286,7 +304,7 @@ describe('applyDrawCard — Bonus', () => {
     expect(result.turn?.phase).toBe(TurnPhase.TurnComplete)
     expect(result.turn?.drawnCard).toBe(testBonus)
     expect(result.turn?.drawnCardType).toBe(CardType.Bonus)
-    const player = result.players.find((p) => p.id === 'p1')!
+    const player = getPlayer(result, 'p1')
     expect(player.bonusCards).toContain(testBonus)
   })
 
@@ -342,7 +360,7 @@ describe('applyBattleOutcome — Victory', () => {
       },
     })
     expect(result.turn?.phase).toBe(TurnPhase.TurnComplete)
-    const player = result.players.find((p) => p.id === 'p1')!
+    const player = getPlayer(result, 'p1')
     expect(player.monstersTamed).toHaveLength(1)
   })
 })
@@ -400,7 +418,7 @@ describe('applyBattleDefeatPenalty', () => {
     const state = stateAtPenalty()
     const result = applyBattleDefeatPenalty(state, AbilityName.Management)
     expect(result.turn?.phase).toBe(TurnPhase.TurnComplete)
-    const player = result.players.find((p) => p.id === 'p1')!
+    const player = getPlayer(result, 'p1')
     expect(player.abilities[AbilityName.Management]).toBe(2)
   })
 
@@ -443,5 +461,45 @@ describe('applyBattleOutcome — player not found', () => {
         },
       }),
     ).toThrow('Active player not found')
+  })
+})
+
+describe('drawFromCosmosDeck', () => {
+  it('draws from cosmos deck and processes the card', () => {
+    let state = makeGameInProgress()
+    state = applyChooseAction(state, TurnAction.DrawFromCosmos)
+    state = { ...state, cosmosDeck: [testBonus, testMonster], discardPile: [] }
+    const result = drawFromCosmosDeck(state)
+    expect(result.turn?.drawnCard).toEqual(testBonus)
+    expect(result.cosmosDeck).toEqual([testMonster])
+  })
+
+  it('reshuffles discard pile when deck is empty', () => {
+    let state = makeGameInProgress()
+    state = applyChooseAction(state, TurnAction.DrawFromCosmos)
+    state = { ...state, cosmosDeck: [], discardPile: [testBonus, testMonster] }
+    const result = drawFromCosmosDeck(state)
+    // Should have drawn one card from reshuffled deck
+    expect(result.turn?.drawnCard).toBeDefined()
+    expect(result.cosmosDeck.length + result.discardPile.length).toBe(1)
+  })
+
+  it('skips draw and goes to TurnComplete when both deck and discard are empty', () => {
+    let state = makeGameInProgress()
+    state = applyChooseAction(state, TurnAction.DrawFromCosmos)
+    state = { ...state, cosmosDeck: [], discardPile: [] }
+    const result = drawFromCosmosDeck(state)
+    expect(result.turn?.phase).toBe(TurnPhase.TurnComplete)
+    expect(result.turn?.drawnCard).toBeUndefined()
+  })
+
+  it('deck size after reshuffle equals discard pile size minus drawn card', () => {
+    let state = makeGameInProgress()
+    state = applyChooseAction(state, TurnAction.DrawFromCosmos)
+    const cards = [testBonus, testMonster, { ...testBonus, id: 'b2' }]
+    state = { ...state, cosmosDeck: [], discardPile: cards }
+    const result = drawFromCosmosDeck(state)
+    // Drew 1 card from reshuffled 3, so 2 remain in deck
+    expect(result.cosmosDeck).toHaveLength(2)
   })
 })

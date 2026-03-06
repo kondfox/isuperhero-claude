@@ -9,7 +9,7 @@ import {
   type RoomSettings,
   TurnPhase,
 } from '@isuperhero/types'
-import { MAX_PLAYERS, MIN_PLAYERS } from './constants'
+import { MIN_PLAYERS } from './constants'
 
 export function createInitialAbilities(): AbilityScores {
   return {
@@ -33,6 +33,9 @@ export function createPlayer(
     abilities: createInitialAbilities(),
     monstersTamed: [],
     bonusCards: [],
+    bonusCardsUsed: 0,
+    hasExtraRoll: false,
+    hasShield: false,
     connected: true,
     ready: false,
   }

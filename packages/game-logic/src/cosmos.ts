@@ -1,4 +1,4 @@
-import { type BonusCard, CardType, type MonsterCard } from '@isuperhero/types'
+import { type BonusCard, CardType, type GameState, type MonsterCard } from '@isuperhero/types'
 
 export interface DrawCardResult {
   card: MonsterCard | BonusCard
@@ -33,4 +33,15 @@ export function shuffleDeck<T>(items: readonly T[], randomFn: () => number = Mat
     ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
   return shuffled
+}
+
+export function reshuffleDeck(state: GameState): GameState {
+  if (state.discardPile.length === 0) {
+    return state
+  }
+  return {
+    ...state,
+    cosmosDeck: shuffleDeck(state.discardPile),
+    discardPile: [],
+  }
 }
