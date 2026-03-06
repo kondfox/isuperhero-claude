@@ -194,6 +194,9 @@ export class PlayerSchema extends Schema {
   declare abilities: AbilityScoresSchema
   declare monstersTamed: ArraySchema<MonsterCardSchema>
   declare bonusCards: ArraySchema<BonusCardSchema>
+  declare bonusCardsUsed: number
+  declare hasExtraRoll: boolean
+  declare hasShield: boolean
   declare connected: boolean
   declare ready: boolean
 
@@ -205,6 +208,9 @@ export class PlayerSchema extends Schema {
     this.abilities = new AbilityScoresSchema()
     this.monstersTamed = new ArraySchema<MonsterCardSchema>()
     this.bonusCards = new ArraySchema<BonusCardSchema>()
+    this.bonusCardsUsed = 0
+    this.hasExtraRoll = false
+    this.hasShield = false
     this.connected = true
     this.ready = false
   }
@@ -216,6 +222,9 @@ defineTypes(PlayerSchema, {
   abilities: AbilityScoresSchema,
   monstersTamed: [MonsterCardSchema],
   bonusCards: [BonusCardSchema],
+  bonusCardsUsed: 'uint16',
+  hasExtraRoll: 'boolean',
+  hasShield: 'boolean',
   connected: 'boolean',
   ready: 'boolean',
 })
@@ -272,6 +281,51 @@ defineTypes(RoomSettingsSchema, {
   roomCode: 'string',
 })
 
+export class PlayerRankingSchema extends Schema {
+  declare playerId: string
+  declare name: string
+  declare monstersCount: number
+  declare totalAbilityScore: number
+  declare bonusCardsUsed: number
+
+  constructor() {
+    super()
+    this.playerId = ''
+    this.name = ''
+    this.monstersCount = 0
+    this.totalAbilityScore = 0
+    this.bonusCardsUsed = 0
+  }
+}
+defineTypes(PlayerRankingSchema, {
+  playerId: 'string',
+  name: 'string',
+  monstersCount: 'uint8',
+  totalAbilityScore: 'uint16',
+  bonusCardsUsed: 'uint8',
+})
+
+export class GameSummarySchema extends Schema {
+  declare winnerId: string
+  declare winnerName: string
+  declare playerRankings: ArraySchema<PlayerRankingSchema>
+  declare totalTurns: number
+
+  constructor() {
+    super()
+    this.winnerId = ''
+    this.winnerName = ''
+    this.playerRankings = new ArraySchema<PlayerRankingSchema>()
+    this.totalTurns = 0
+  }
+}
+defineTypes(GameSummarySchema, {
+  winnerId: 'string',
+  winnerName: 'string',
+  playerRankings: [PlayerRankingSchema],
+  totalTurns: 'uint16',
+})
+
 export class GameStateSchema extends Schema {
   declare phase: string
   declare players: ArraySchema<PlayerSchema>
@@ -282,6 +336,7 @@ export class GameStateSchema extends Schema {
   declare eventLog: ArraySchema<GameEventSchema>
   declare winnerId: string
   declare roomSettings: RoomSettingsSchema
+  declare gameSummary: GameSummarySchema | undefined
 
   constructor() {
     super()
@@ -305,4 +360,5 @@ defineTypes(GameStateSchema, {
   eventLog: [GameEventSchema],
   winnerId: 'string',
   roomSettings: RoomSettingsSchema,
+  gameSummary: GameSummarySchema,
 })

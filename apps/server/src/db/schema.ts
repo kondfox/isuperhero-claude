@@ -1,4 +1,15 @@
-import { integer, jsonb, pgTable, smallint, text, varchar } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
+import {
+  integer,
+  jsonb,
+  pgTable,
+  smallint,
+  text,
+  timestamp,
+  unique,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core'
 
 export const tasks = pgTable('tasks', {
   id: varchar('id', { length: 64 }).primaryKey(),
@@ -31,3 +42,40 @@ export const bonusCards = pgTable('bonus_cards', {
   imageUrl: varchar('image_url', { length: 256 }).notNull(),
   deckCount: integer('deck_count').notNull().default(1),
 })
+
+// --- Player accounts & game history ---
+
+export const players = pgTable('players', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  displayName: varchar('display_name', { length: 50 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
+export const gameRecords = pgTable('game_records', {
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  roomCode: varchar('room_code', { length: 10 }).notNull(),
+  startedAt: timestamp('started_at').notNull(),
+  finishedAt: timestamp('finished_at'),
+  winnerId: uuid('winner_id').references(() => players.id),
+  totalTurns: integer('total_turns'),
+  settings: jsonb('settings').notNull().default({}),
+})
+
+export const gameParticipants = pgTable(
+  'game_participants',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    gameId: uuid('game_id')
+      .references(() => gameRecords.id, { onDelete: 'cascade' })
+      .notNull(),
+    playerId: uuid('player_id')
+      .references(() => players.id)
+      .notNull(),
+    finalRank: integer('final_rank'),
+    monstersTamed: integer('monsters_tamed').default(0),
+    totalAbilityScore: integer('total_ability_score').default(0),
+    bonusCardsUsed: integer('bonus_cards_used').default(0),
+  },
+  (t) => [unique('game_participants_game_player_unique').on(t.gameId, t.playerId)],
+)

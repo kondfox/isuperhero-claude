@@ -1,7 +1,6 @@
 import { ArraySchema, MapSchema } from '@colyseus/schema'
 import {
   AbilityName,
-  CardType,
   DifficultyLevel,
   GameEventType,
   GamePhase,
@@ -18,7 +17,9 @@ import {
   DieRollSchema,
   GameEventSchema,
   GameStateSchema,
+  GameSummarySchema,
   MonsterCardSchema,
+  PlayerRankingSchema,
   PlayerSchema,
   RoomSettingsSchema,
   TaskSchema,
@@ -198,6 +199,37 @@ describe('RoomSettingsSchema', () => {
   })
 })
 
+describe('PlayerRankingSchema', () => {
+  it('stores ranking data', () => {
+    const ranking = new PlayerRankingSchema()
+    ranking.playerId = 'p1'
+    ranking.name = 'Alice'
+    ranking.monstersCount = 3
+    ranking.totalAbilityScore = 22
+    ranking.bonusCardsUsed = 1
+    expect(ranking.playerId).toBe('p1')
+    expect(ranking.monstersCount).toBe(3)
+    expect(ranking.totalAbilityScore).toBe(22)
+  })
+})
+
+describe('GameSummarySchema', () => {
+  it('stores game summary with rankings', () => {
+    const summary = new GameSummarySchema()
+    summary.winnerId = 'p1'
+    summary.winnerName = 'Alice'
+    summary.totalTurns = 10
+    const ranking = new PlayerRankingSchema()
+    ranking.playerId = 'p1'
+    ranking.name = 'Alice'
+    ranking.monstersCount = 3
+    summary.playerRankings.push(ranking)
+    expect(summary.winnerId).toBe('p1')
+    expect(summary.totalTurns).toBe(10)
+    expect(summary.playerRankings.length).toBe(1)
+  })
+})
+
 describe('GameStateSchema', () => {
   it('initializes with defaults', () => {
     const state = new GameStateSchema()
@@ -230,5 +262,15 @@ describe('GameStateSchema', () => {
     state.roomSettings.maxPlayers = 3
     expect(state.turn.activePlayerId).toBe('p1')
     expect(state.roomSettings.maxPlayers).toBe(3)
+  })
+
+  it('stores gameSummary when set', () => {
+    const state = new GameStateSchema()
+    expect(state.gameSummary).toBeUndefined()
+    const summary = new GameSummarySchema()
+    summary.winnerId = 'p1'
+    summary.winnerName = 'Alice'
+    state.gameSummary = summary
+    expect(state.gameSummary.winnerId).toBe('p1')
   })
 })

@@ -4,6 +4,8 @@ import { createServer } from 'node:http'
 import { dirname, extname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Server } from 'colyseus'
+import { handleApiRequest } from './api/routes'
+import { getDb } from './db/index'
 import { GameRoom } from './rooms/GameRoom'
 
 const port = Number(process.env.PORT) || 2567
@@ -24,10 +26,23 @@ const MIME_TYPES: Record<string, string> = {
   '.woff2': 'font/woff2',
 }
 
-const httpServer = createServer((req, res) => {
+const httpServer = createServer(async (req, res) => {
+  const url = req.url ?? '/'
+
+  // API routes (only if DATABASE_URL is configured)
+  if (url.startsWith('/api/') && process.env.DATABASE_URL) {
+    try {
+      const handled = await handleApiRequest(req, res, getDb())
+      if (handled) return
+    } catch (_err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ error: 'Internal server error', code: 'INTERNAL_ERROR' }))
+      return
+    }
+  }
+
   if (!hasStaticFiles) return
 
-  const url = req.url ?? '/'
   // Skip Colyseus paths
   if (url.startsWith('/colyseus') || url.startsWith('/matchmake')) return
 
