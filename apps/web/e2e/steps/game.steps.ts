@@ -357,3 +357,67 @@ Then('both players should see a card drawn event', async ({ page, world }) => {
   await expect(bobLog.getByText(/drew/i)).toBeVisible()
   await expect(aliceLog.getByText(/drew/i)).toBeVisible()
 })
+
+// === Event log ===
+
+Then('the event log should be visible', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  await expect(world.activePlayerPage.getByTestId('event-log')).toBeVisible()
+})
+
+Then('the active player should see an event in the log', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const log = world.activePlayerPage.getByTestId('event-log')
+  // Wait for at least one event item to appear (not the "No events yet" placeholder)
+  await expect(async () => {
+    const items = log.locator('[class*=eventItem]')
+    const count = await items.count()
+    expect(count).toBeGreaterThan(0)
+  }).toPass({ timeout: 5000 })
+})
+
+When('the active player toggles the event log', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  await world.activePlayerPage.getByRole('button', { name: 'Toggle event log' }).click()
+})
+
+Then('the active player event log should be collapsed', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const log = world.activePlayerPage.getByTestId('event-log')
+  await expect(log).toHaveClass(/collapsibleCollapsed/)
+})
+
+Then('the active player event log should be expanded', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const log = world.activePlayerPage.getByTestId('event-log')
+  await expect(log).not.toHaveClass(/collapsibleCollapsed/)
+})
+
+// === Mobile responsiveness ===
+
+Given('the viewport is set to mobile', async ({ page, world }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  if (world.activePlayerPage && world.activePlayerPage !== page) {
+    await world.activePlayerPage.setViewportSize({ width: 375, height: 812 })
+  }
+})
+
+Then('each passport should show a compact summary', async ({ page }) => {
+  const passports = page.getByTestId('player-passport')
+  const count = await passports.count()
+  expect(count).toBeGreaterThanOrEqual(2)
+  // Compact passports show "monsters" and "ability" summary text
+  for (let i = 0; i < count; i++) {
+    await expect(passports.nth(i).getByText(/monsters/i)).toBeVisible()
+    await expect(passports.nth(i).getByText(/ability/i)).toBeVisible()
+  }
+})
+
+When('I tap the first player passport', async ({ page }) => {
+  await page.getByTestId('player-passport').first().click()
+})
+
+Then('the first passport should show ability scores', async ({ page }) => {
+  const passport = page.getByTestId('player-passport').first()
+  await expect(passport.getByTestId('ability-score').first()).toBeVisible()
+})
