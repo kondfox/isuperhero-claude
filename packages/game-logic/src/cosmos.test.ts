@@ -1,6 +1,13 @@
-import { AbilityName, type BonusCard, CardType, type MonsterCard } from '@isuperhero/types'
+import {
+  AbilityName,
+  type BonusCard,
+  CardType,
+  type GameState,
+  type MonsterCard,
+} from '@isuperhero/types'
 import { describe, expect, it } from 'vitest'
-import { drawCard, getCardType, isMonsterCard, shuffleDeck } from './cosmos'
+import { drawCard, getCardType, isMonsterCard, reshuffleDeck, shuffleDeck } from './cosmos'
+import { createGameState } from './create-game'
 
 const monster: MonsterCard = {
   id: 'm1',
@@ -48,9 +55,9 @@ describe('drawCard', () => {
     const deck = [monster, bonus]
     const result = drawCard(deck)
     expect(result).not.toBeNull()
-    expect(result!.card).toBe(monster)
-    expect(result!.cardType).toBe(CardType.Monster)
-    expect(result!.remainingDeck).toEqual([bonus])
+    expect(result?.card).toBe(monster)
+    expect(result?.cardType).toBe(CardType.Monster)
+    expect(result?.remainingDeck).toEqual([bonus])
   })
 
   it('returns null for an empty deck', () => {
@@ -59,9 +66,9 @@ describe('drawCard', () => {
 
   it('returns a single card when deck has one card', () => {
     const result = drawCard([bonus])
-    expect(result!.card).toBe(bonus)
-    expect(result!.cardType).toBe(CardType.Bonus)
-    expect(result!.remainingDeck).toEqual([])
+    expect(result?.card).toBe(bonus)
+    expect(result?.cardType).toBe(CardType.Bonus)
+    expect(result?.remainingDeck).toEqual([])
   })
 
   it('does not mutate the original deck', () => {
@@ -103,5 +110,68 @@ describe('shuffleDeck', () => {
 
   it('handles single element', () => {
     expect(shuffleDeck([42])).toEqual([42])
+  })
+})
+
+const defaultSettings = {
+  maxPlayers: 2,
+  taskTimeLimitSeconds: 60,
+  roomName: 'Test',
+  roomCode: 'ABC123',
+}
+
+const bonus2: BonusCard = {
+  id: 'b2',
+  name: 'Shield',
+  description: 'Prevents ability loss',
+  effectType: 'shield',
+  imageUrl: 'shield.png',
+}
+
+describe('reshuffleDeck', () => {
+  it('moves discard pile into cosmos deck', () => {
+    const state: GameState = {
+      ...createGameState(defaultSettings),
+      cosmosDeck: [],
+      discardPile: [monster, bonus],
+    }
+    const result = reshuffleDeck(state)
+    expect(result.cosmosDeck).toHaveLength(2)
+    expect(result.discardPile).toEqual([])
+  })
+
+  it('preserves all cards from discard pile', () => {
+    const state: GameState = {
+      ...createGameState(defaultSettings),
+      cosmosDeck: [],
+      discardPile: [monster, bonus, bonus2],
+    }
+    const result = reshuffleDeck(state)
+    expect(result.cosmosDeck).toHaveLength(3)
+    const ids = result.cosmosDeck.map((c) => c.id).sort()
+    expect(ids).toEqual(['b1', 'b2', 'm1'])
+  })
+
+  it('returns state unchanged when discard pile is empty', () => {
+    const state: GameState = {
+      ...createGameState(defaultSettings),
+      cosmosDeck: [],
+      discardPile: [],
+    }
+    const result = reshuffleDeck(state)
+    expect(result.cosmosDeck).toEqual([])
+    expect(result.discardPile).toEqual([])
+  })
+
+  it('does not mutate original state', () => {
+    const discardPile = [monster, bonus]
+    const state: GameState = {
+      ...createGameState(defaultSettings),
+      cosmosDeck: [],
+      discardPile,
+    }
+    reshuffleDeck(state)
+    expect(state.discardPile).toHaveLength(2)
+    expect(state.cosmosDeck).toHaveLength(0)
   })
 })

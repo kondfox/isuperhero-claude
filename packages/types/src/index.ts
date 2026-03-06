@@ -67,6 +67,10 @@ export enum GameEventType {
   PlayerLeft = 'playerLeft',
   GameStarted = 'gameStarted',
   GameWon = 'gameWon',
+  CosmosReshuffled = 'cosmosReshuffled',
+  CosmosEmpty = 'cosmosEmpty',
+  BonusCardUsed = 'bonusCardUsed',
+  GameFinished = 'gameFinished',
 }
 
 // === Core Data Structures ===
@@ -86,6 +90,9 @@ export interface PlayerState {
   abilities: AbilityScores
   monstersTamed: MonsterCard[]
   bonusCards: BonusCard[]
+  bonusCardsUsed: number
+  hasExtraRoll: boolean
+  hasShield: boolean
   connected: boolean
   ready: boolean
 }
@@ -210,6 +217,12 @@ export interface StartGameMessage {
   type: 'startGame'
 }
 
+export interface UseBonusCardMessage {
+  type: 'useBonusCard'
+  cardId: string
+  params?: BonusCardParams
+}
+
 export type GameMessage =
   | ChooseActionMessage
   | ChooseAbilityMessage
@@ -218,3 +231,35 @@ export type GameMessage =
   | BattleDefeatPenaltyMessage
   | PlayerReadyMessage
   | StartGameMessage
+  | UseBonusCardMessage
+
+// === Bonus Card Effects ===
+
+export enum BonusEffect {
+  ExtraRoll = 'extraRoll',
+  AbilityBoost = 'abilityBoost',
+  Shield = 'shield',
+  Swap = 'swap',
+}
+
+export interface BonusCardParams {
+  ability?: AbilityName
+  swapFrom?: AbilityName
+  swapTo?: AbilityName
+}
+
+// === Game Summary ===
+
+export interface GameSummary {
+  winnerId: PlayerId
+  winnerName: string
+  playerRankings: Array<{
+    playerId: PlayerId
+    name: string
+    monstersCount: number
+    totalAbilityScore: number
+    bonusCardsUsed: number
+  }>
+  totalTurns: number
+  gameDuration?: number
+}

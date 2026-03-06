@@ -1,4 +1,4 @@
-import type { AbilityName, DieRollResult, PlayerId } from '@isuperhero/types'
+import type { AbilityName, DieRollResult } from '@isuperhero/types'
 import { DIE_SIDES } from './constants'
 
 export function getRolledTaskKey(abilityName: AbilityName): string {

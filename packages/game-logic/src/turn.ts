@@ -4,6 +4,7 @@ import {
   type BonusCard,
   CardType,
   type DieRollResult,
+  GamePhase,
   type GameState,
   type MonsterCard,
   type PlayerId,
@@ -14,6 +15,7 @@ import {
 } from '@isuperhero/types'
 import { applyTaskRewards } from './ability'
 import { applyBattleDefeat, applyBattleVictory } from './battle'
+import { drawCard, reshuffleDeck } from './cosmos'
 
 export function createTurn(activePlayerId: PlayerId): TurnState {
   return {
@@ -23,6 +25,10 @@ export function createTurn(activePlayerId: PlayerId): TurnState {
 }
 
 export function advanceToNextPlayer(state: GameState): GameState {
+  if (state.phase === GamePhase.Finished) {
+    return state
+  }
+
   const { turnOrder, players } = state
   if (turnOrder.length === 0) {
     throw new Error('No players in turn order')
@@ -217,4 +223,34 @@ export function applyBattleDefeatPenalty(state: GameState, ability: AbilityName)
     players: state.players.map((p) => (p.id === player.id ? updatedPlayer : p)),
     turn: { ...turn, phase: TurnPhase.TurnComplete },
   }
+}
+
+export function drawFromCosmosDeck(state: GameState): GameState {
+  const turn = assertPhase(state, TurnPhase.DrawingCard)
+
+  let currentState = state
+
+  // If deck is empty, try reshuffling discard pile
+  if (currentState.cosmosDeck.length === 0) {
+    currentState = reshuffleDeck(currentState)
+  }
+
+  // If still empty (both deck and discard were empty), skip draw
+  if (currentState.cosmosDeck.length === 0) {
+    return {
+      ...currentState,
+      turn: { ...turn, phase: TurnPhase.TurnComplete },
+    }
+  }
+
+  const result = drawCard(currentState.cosmosDeck)
+  if (!result) {
+    throw new Error('Unexpected empty deck after reshuffle check')
+  }
+
+  return applyDrawCard(
+    { ...currentState, cosmosDeck: result.remainingDeck },
+    result.card,
+    result.cardType,
+  )
 }
