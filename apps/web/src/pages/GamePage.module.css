@@ -30,13 +30,26 @@
   min-width: 240px;
   max-width: 320px;
   background-color: var(--color-bg-surface);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: var(--space-3);
   border: 2px solid transparent;
+  box-shadow: var(--shadow-card);
+  transition: border-color var(--transition-fast);
 }
 
 .passportActive {
   border-color: var(--color-primary);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    border-color: var(--color-primary);
+  }
+  50% {
+    border-color: var(--color-secondary);
+  }
 }
 
 .passportName {
@@ -205,10 +218,23 @@
 
 .taskCard {
   background-color: var(--color-bg-surface);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: var(--space-4);
   min-width: 280px;
   text-align: center;
+  box-shadow: var(--shadow-card);
+  animation: slideInRight 300ms ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .taskTitle {
@@ -268,10 +294,12 @@
 
 .drawnCard {
   background-color: var(--color-bg-elevated);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: var(--space-4);
   min-width: 240px;
   text-align: center;
+  box-shadow: var(--shadow-card);
+  animation: slideInRight 300ms ease;
 }
 
 .drawnCardImage {
@@ -294,6 +322,34 @@
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
+  animation: fadeInUp 300ms ease both;
+}
+
+.battleMatchup:nth-child(1) {
+  animation-delay: 0ms;
+}
+.battleMatchup:nth-child(2) {
+  animation-delay: 200ms;
+}
+.battleMatchup:nth-child(3) {
+  animation-delay: 400ms;
+}
+.battleMatchup:nth-child(4) {
+  animation-delay: 600ms;
+}
+.battleMatchup:nth-child(5) {
+  animation-delay: 800ms;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .matchupWin {
@@ -318,22 +374,77 @@
 .victory {
   color: var(--color-success);
   font-weight: 700;
+  position: relative;
+}
+
+.victory::before,
+.victory::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: sparkle 1.5s ease infinite;
+}
+
+.victory::before {
+  top: -4px;
+  left: -8px;
+  background-color: var(--color-warning);
+}
+
+.victory::after {
+  top: -2px;
+  right: -8px;
+  background-color: var(--color-secondary);
+  animation-delay: 0.5s;
+}
+
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .defeat {
   color: var(--color-danger);
   font-weight: 700;
+  animation: shake 500ms ease;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
 }
 
 .eventLog {
   width: 100%;
-  max-width: 600px;
-  margin-top: auto;
   background-color: var(--color-bg-surface);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: var(--space-3);
   max-height: 160px;
   overflow-y: auto;
+  box-shadow: var(--shadow-card);
 }
 
 .eventItem {
@@ -341,10 +452,45 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  animation: eventSlideIn 300ms ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
 }
 
 .eventItem:last-child {
   border-bottom: none;
+}
+
+.eventPositive {
+  color: var(--color-event-positive);
+}
+
+.eventNegative {
+  color: var(--color-event-negative);
+}
+
+.eventInfo {
+  color: var(--color-event-info);
+}
+
+.eventTimestamp {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+@keyframes eventSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .eventEmpty {
@@ -352,4 +498,107 @@
   font-size: var(--font-size-sm);
   text-align: center;
   font-style: italic;
+}
+
+/* Compact passport summary (mobile only) */
+.passportSummary {
+  display: none;
+}
+
+.eventLogWrapper {
+  width: 100%;
+  max-width: 600px;
+  margin-top: auto;
+}
+
+/* Collapsible panel */
+.collapsibleHeader {
+  display: none;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .page {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .passportRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .passport {
+    min-width: unset;
+    max-width: none;
+    cursor: pointer;
+  }
+
+  .passportCompact .abilityBars,
+  .passportCompact .bonusTray,
+  .passportCompact .shipBeds {
+    display: none;
+  }
+
+  .passportCompact .passportName {
+    margin-bottom: 0;
+  }
+
+  .passportSummary {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin-top: var(--space-1);
+  }
+
+  .actions button,
+  .abilityGrid button {
+    width: 100%;
+  }
+
+  .actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .abilityGrid {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .collapsibleHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-2) var(--space-3);
+    background-color: var(--color-bg-surface);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .collapsibleContent {
+    overflow: hidden;
+    transition: max-height 300ms ease;
+  }
+
+  .collapsibleCollapsed {
+    max-height: 0;
+  }
+
+  .collapsibleExpanded {
+    max-height: 500px;
+  }
+
+  .collapsibleCollapsed {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0;
+    border: none;
+  }
 }

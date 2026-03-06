@@ -61,4 +61,19 @@
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
+
+  /* Focus */
+  --focus-ring: 2px solid var(--color-secondary);
+  --focus-ring-offset: 2px;
+
+  /* Event log colors */
+  --color-event-positive: #22c55e;
+  --color-event-negative: #ef4444;
+  --color-event-info: #3b82f6;
+}
+
+/* Focus-visible outlines for all interactive elements */
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }

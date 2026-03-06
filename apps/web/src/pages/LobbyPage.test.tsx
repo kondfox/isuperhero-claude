@@ -23,6 +23,9 @@ const mockPlayer = {
   abilities: emptyAbilities,
   monstersTamed: [],
   bonusCards: [],
+  bonusCardsUsed: 0,
+  hasExtraRoll: false,
+  hasShield: false,
   connected: true,
   ready: false,
 }
