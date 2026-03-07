@@ -34,8 +34,8 @@ export function createPlayer(
     monstersTamed: [],
     bonusCards: [],
     bonusCardsUsed: 0,
-    hasExtraRoll: false,
-    hasShield: false,
+    hasBattleAdvantage: false,
+    hasDefeatImmunity: false,
     connected: true,
     ready: false,
   }

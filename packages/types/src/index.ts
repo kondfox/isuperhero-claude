@@ -91,8 +91,8 @@ export interface PlayerState {
   monstersTamed: MonsterCard[]
   bonusCards: BonusCard[]
   bonusCardsUsed: number
-  hasExtraRoll: boolean
-  hasShield: boolean
+  hasBattleAdvantage: boolean
+  hasDefeatImmunity: boolean
   connected: boolean
   ready: boolean
 }
@@ -236,16 +236,20 @@ export type GameMessage =
 // === Bonus Card Effects ===
 
 export enum BonusEffect {
-  ExtraRoll = 'extraRoll',
-  AbilityBoost = 'abilityBoost',
-  Shield = 'shield',
-  Swap = 'swap',
+  ExtraTurn = 'extraTurn',
+  BoostManagement = 'boostManagement',
+  BoostCommunication = 'boostCommunication',
+  BoostOrientation = 'boostOrientation',
+  BoostProcessing = 'boostProcessing',
+  BoostMovementEnergy = 'boostMovementEnergy',
+  BoostChoice = 'boostChoice',
+  BattleAdvantage = 'battleAdvantage',
+  DefeatImmunity = 'defeatImmunity',
+  DefeatImmunityChain = 'defeatImmunityChain',
 }
 
 export interface BonusCardParams {
   ability?: AbilityName
-  swapFrom?: AbilityName
-  swapTo?: AbilityName
 }
 
 // === Game Summary ===
