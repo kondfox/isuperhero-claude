@@ -136,6 +136,53 @@ describe('applyBattleVictory', () => {
   })
 })
 
+describe('resolveBattle with hasBattleAdvantage', () => {
+  it('returns victory when player wins 4 out of 5 abilities', () => {
+    const player = {
+      ...makePlayerWithAbilities({
+        [AbilityName.Management]: 1, // loses this one
+        [AbilityName.Communication]: 3,
+        [AbilityName.Orientation]: 3,
+        [AbilityName.Processing]: 3,
+        [AbilityName.MovementEnergy]: 3,
+      }),
+      hasBattleAdvantage: true,
+    }
+    const result = resolveBattle(player, makeMonster())
+    expect(result.victory).toBe(true)
+  })
+
+  it('returns defeat when player wins only 3 out of 5', () => {
+    const player = {
+      ...makePlayerWithAbilities({
+        [AbilityName.Management]: 1,
+        [AbilityName.Communication]: 1,
+        [AbilityName.Orientation]: 3,
+        [AbilityName.Processing]: 3,
+        [AbilityName.MovementEnergy]: 3,
+      }),
+      hasBattleAdvantage: true,
+    }
+    const result = resolveBattle(player, makeMonster())
+    expect(result.victory).toBe(false)
+  })
+
+  it('still wins with 5 out of 5 when advantage is active', () => {
+    const player = {
+      ...makePlayerWithAbilities({
+        [AbilityName.Management]: 3,
+        [AbilityName.Communication]: 3,
+        [AbilityName.Orientation]: 3,
+        [AbilityName.Processing]: 3,
+        [AbilityName.MovementEnergy]: 3,
+      }),
+      hasBattleAdvantage: true,
+    }
+    const result = resolveBattle(player, makeMonster())
+    expect(result.victory).toBe(true)
+  })
+})
+
 describe('applyBattleDefeat', () => {
   it('decreases the chosen ability by 1', () => {
     const player = makePlayerWithAbilities({ [AbilityName.Management]: 3 })
@@ -147,5 +194,15 @@ describe('applyBattleDefeat', () => {
     const player = createPlayer('p1', 'Alice', DifficultyLevel.Level1)
     const result = applyBattleDefeat(player, AbilityName.Management)
     expect(result.abilities[AbilityName.Management]).toBe(0)
+  })
+
+  it('skips penalty when hasDefeatImmunity is true', () => {
+    const player = {
+      ...makePlayerWithAbilities({ [AbilityName.Management]: 3 }),
+      hasDefeatImmunity: true,
+    }
+    const result = applyBattleDefeat(player, AbilityName.Management)
+    expect(result.abilities[AbilityName.Management]).toBe(3)
+    expect(result.hasDefeatImmunity).toBe(false)
   })
 })

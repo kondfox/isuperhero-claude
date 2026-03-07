@@ -4,17 +4,20 @@ import { ALL_ABILITIES } from './constants'
 
 export function resolveBattle(player: PlayerState, monster: MonsterCard): BattleResult {
   const comparisons = {} as BattleResult['comparisons']
-  let victory = true
+  let winsCount = 0
 
   for (const ability of ALL_ABILITIES) {
     const playerScore = player.abilities[ability]
     const monsterScore = monster.abilities[ability]
     const playerWins = playerScore > monsterScore
     comparisons[ability] = { playerScore, monsterScore, playerWins }
-    if (!playerWins) {
-      victory = false
+    if (playerWins) {
+      winsCount++
     }
   }
+
+  const requiredWins = player.hasBattleAdvantage ? ALL_ABILITIES.length - 1 : ALL_ABILITIES.length
+  const victory = winsCount >= requiredWins
 
   return { victory, comparisons }
 }
@@ -27,5 +30,8 @@ export function applyBattleVictory(player: PlayerState, monster: MonsterCard): P
 }
 
 export function applyBattleDefeat(player: PlayerState, ability: AbilityName): PlayerState {
+  if (player.hasDefeatImmunity) {
+    return { ...player, hasDefeatImmunity: false }
+  }
   return decreaseAbility(player, ability)
 }
