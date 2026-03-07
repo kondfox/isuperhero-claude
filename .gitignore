@@ -29,6 +29,7 @@ coverage/
 playwright-report/
 test-results/
 .features-gen/
+.playwright-mcp/
 
 # OS
 .DS_Store
