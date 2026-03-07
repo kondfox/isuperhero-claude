@@ -68,8 +68,8 @@ function makePlayer(id = 'p1', name = 'Alice'): PlayerState {
     monstersTamed: [makeMonster()],
     bonusCards: [makeBonus()],
     bonusCardsUsed: 0,
-    hasExtraRoll: false,
-    hasShield: false,
+    hasBattleAdvantage: false,
+    hasDefeatImmunity: false,
     connected: true,
     ready: true,
   }

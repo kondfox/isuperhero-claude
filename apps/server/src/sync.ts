@@ -92,8 +92,8 @@ function syncPlayer(source: PlayerState): PlayerSchema {
   )
   schema.bonusCards = new ArraySchema<BonusCardSchema>(...source.bonusCards.map(syncBonusCard))
   schema.bonusCardsUsed = source.bonusCardsUsed
-  schema.hasExtraRoll = source.hasExtraRoll
-  schema.hasShield = source.hasShield
+  schema.hasBattleAdvantage = source.hasBattleAdvantage
+  schema.hasDefeatImmunity = source.hasDefeatImmunity
   schema.connected = source.connected
   schema.ready = source.ready
   return schema
