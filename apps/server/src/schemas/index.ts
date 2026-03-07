@@ -195,8 +195,8 @@ export class PlayerSchema extends Schema {
   declare monstersTamed: ArraySchema<MonsterCardSchema>
   declare bonusCards: ArraySchema<BonusCardSchema>
   declare bonusCardsUsed: number
-  declare hasExtraRoll: boolean
-  declare hasShield: boolean
+  declare hasBattleAdvantage: boolean
+  declare hasDefeatImmunity: boolean
   declare connected: boolean
   declare ready: boolean
 
@@ -209,8 +209,8 @@ export class PlayerSchema extends Schema {
     this.monstersTamed = new ArraySchema<MonsterCardSchema>()
     this.bonusCards = new ArraySchema<BonusCardSchema>()
     this.bonusCardsUsed = 0
-    this.hasExtraRoll = false
-    this.hasShield = false
+    this.hasBattleAdvantage = false
+    this.hasDefeatImmunity = false
     this.connected = true
     this.ready = false
   }
@@ -223,8 +223,8 @@ defineTypes(PlayerSchema, {
   monstersTamed: [MonsterCardSchema],
   bonusCards: [BonusCardSchema],
   bonusCardsUsed: 'uint16',
-  hasExtraRoll: 'boolean',
-  hasShield: 'boolean',
+  hasBattleAdvantage: 'boolean',
+  hasDefeatImmunity: 'boolean',
   connected: 'boolean',
   ready: 'boolean',
 })

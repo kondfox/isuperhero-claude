@@ -68,11 +68,16 @@ function buildCosmosDeck(
 ): Array<MonsterCard | BonusCard> {
   const deck: Array<MonsterCard | BonusCard> = [...monsters]
 
-  // Distribute bonus cards into the deck
+  // Distribute bonus cards into the deck with unique IDs per copy
   let remaining = bonusCount
   let cardIndex = 0
   while (remaining > 0 && bonusCards.length > 0) {
-    deck.push(bonusCards[cardIndex % bonusCards.length])
+    const original = bonusCards[cardIndex % bonusCards.length]
+    const copyNumber = Math.floor(cardIndex / bonusCards.length)
+    deck.push({
+      ...original,
+      id: copyNumber === 0 ? original.id : `${original.id}_${copyNumber}`,
+    })
     cardIndex++
     remaining--
   }

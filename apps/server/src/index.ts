@@ -29,8 +29,13 @@ const MIME_TYPES: Record<string, string> = {
 const httpServer = createServer(async (req, res) => {
   const url = req.url ?? '/'
 
-  // API routes (only if DATABASE_URL is configured)
-  if (url.startsWith('/api/') && process.env.DATABASE_URL) {
+  // API routes
+  if (url.startsWith('/api/')) {
+    if (!process.env.DATABASE_URL) {
+      res.writeHead(503, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify({ error: 'Database not configured', code: 'NO_DATABASE' }))
+      return
+    }
     try {
       const handled = await handleApiRequest(req, res, getDb())
       if (handled) return
