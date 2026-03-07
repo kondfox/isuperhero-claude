@@ -1,7 +1,7 @@
 import type { BrowserContext, Page } from '@playwright/test'
 import { test as base } from 'playwright-bdd'
 
-interface World {
+export interface World {
   roomCode: string
   aliceContext: BrowserContext | null
   alicePage: Page | null
