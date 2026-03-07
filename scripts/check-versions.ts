@@ -120,6 +120,26 @@ function getWorkspacePackageJsonPaths(): string[] {
   return paths
 }
 
+function getWorkspaceDirs(): string[] {
+  const rootPkg: PackageJson = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf-8'))
+  const dirs: string[] = []
+
+  for (const pattern of rootPkg.workspaces ?? []) {
+    const dir = join(ROOT, pattern.replace('/*', '').replace('/*', ''))
+    if (!existsSync(dir)) continue
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        const pkgPath = join(dir, entry.name, 'package.json')
+        if (existsSync(pkgPath)) {
+          dirs.push(join(dir, entry.name))
+        }
+      }
+    }
+  }
+
+  return dirs
+}
+
 // --- Mismatch detection ---
 
 function checkMismatches(): Mismatch[] {
@@ -211,34 +231,52 @@ function fixMismatches(mismatches: Mismatch[]): void {
 
 // --- Outdated detection ---
 
+function parseOutdatedOutput(output: string): OutdatedEntry[] {
+  const entries: OutdatedEntry[] = []
+
+  // Parse ASCII table rows: | Package | Current | Update | Latest |
+  for (const line of output.split('\n')) {
+    if (!line.startsWith('|') || line.includes('---') || line.includes('Package')) continue
+    const cols = line
+      .split('|')
+      .map((c) => c.trim())
+      .filter(Boolean)
+    if (cols.length < 4) continue
+
+    const name = cols[0].replace(/\s*\(dev\)/, '')
+    const current = cols[1]
+    const latest = cols[3]
+
+    if (current !== latest) {
+      const severity = classifySeverity(current, latest)
+      entries.push({ name, current, latest, severity })
+    }
+  }
+
+  return entries
+}
+
 function checkOutdated(): OutdatedEntry[] {
   try {
-    const result = Bun.spawnSync(['bun', 'outdated'], {
-      cwd: ROOT,
-      env: process.env,
-    })
+    const seen = new Map<string, OutdatedEntry>()
 
-    const output = result.stdout.toString()
-    const entries: OutdatedEntry[] = []
-
-    // Parse ASCII table rows: | Package | Current | Update | Latest |
-    for (const line of output.split('\n')) {
-      if (!line.startsWith('|') || line.includes('---') || line.includes('Package')) continue
-      const cols = line
-        .split('|')
-        .map((c) => c.trim())
-        .filter(Boolean)
-      if (cols.length < 4) continue
-
-      const name = cols[0].replace(/\s*\(dev\)/, '')
-      const current = cols[1]
-      const latest = cols[3]
-
-      if (current !== latest) {
-        const severity = classifySeverity(current, latest)
-        entries.push({ name, current, latest, severity })
+    // Run `bun outdated` in root and each workspace directory
+    const dirs = [ROOT, ...getWorkspaceDirs()]
+    for (const dir of dirs) {
+      const result = Bun.spawnSync(['bun', 'outdated'], {
+        cwd: dir,
+        env: process.env,
+      })
+      for (const entry of parseOutdatedOutput(result.stdout.toString())) {
+        // Keep the entry with the highest latest version (dedup across workspaces)
+        const existing = seen.get(entry.name)
+        if (!existing || higherRange(entry.latest, existing.latest) === entry.latest) {
+          seen.set(entry.name, entry)
+        }
       }
     }
+
+    const entries = [...seen.values()]
 
     // Sort: major first, then minor, then patch
     const order = { major: 0, minor: 1, patch: 2 }
