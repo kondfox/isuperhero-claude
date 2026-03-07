@@ -54,6 +54,7 @@ import { syncToSchema } from '../sync'
 
 interface JoinOptions {
   name: string
+  playerId?: string
   difficultyLevel: DifficultyLevel
   roomName?: string
   roomCode?: string
@@ -113,6 +114,7 @@ function createFallbackTask(ability: AbilityName, taskNumber: number): TaskDefin
 export class GameRoom extends Room<{ state: GameStateSchema }> {
   private gameState!: GameState
   private taskIndex: Map<string, TaskDefinition> = new Map()
+  private sessionToPlayerId: Map<string, string> = new Map()
 
   onCreate(options: JoinOptions): void {
     const settings: RoomSettings = {
@@ -170,6 +172,9 @@ export class GameRoom extends Room<{ state: GameStateSchema }> {
         options.name ?? 'Player',
         options.difficultyLevel ?? DifficultyLevel.Level1,
       )
+      if (options.playerId) {
+        this.sessionToPlayerId.set(client.sessionId, options.playerId)
+      }
       this.gameState = addPlayerToGame(this.gameState, player)
       this.sync()
     } catch (err) {
@@ -403,6 +408,9 @@ export class GameRoom extends Room<{ state: GameStateSchema }> {
     const summary = getGameSummary(this.gameState)
     const db = getDb()
 
+    // Map session IDs to DB player IDs
+    const winnerId = this.sessionToPlayerId.get(summary.winnerId)
+
     await db.transaction(async (tx) => {
       const [record] = await tx
         .insert(gameRecords)
@@ -410,16 +418,18 @@ export class GameRoom extends Room<{ state: GameStateSchema }> {
           roomCode: this.gameState.roomSettings.roomCode,
           startedAt: new Date(),
           finishedAt: new Date(),
-          winnerId: summary.winnerId,
+          winnerId: winnerId ?? null,
           totalTurns: summary.totalTurns,
           settings: this.gameState.roomSettings,
         })
         .returning()
 
       for (const [index, ranking] of summary.playerRankings.entries()) {
+        const dbPlayerId = this.sessionToPlayerId.get(ranking.playerId)
+        if (!dbPlayerId) continue
         await tx.insert(gameParticipants).values({
           gameId: record.id,
-          playerId: ranking.playerId,
+          playerId: dbPlayerId,
           finalRank: index + 1,
           monstersTamed: ranking.monstersCount,
           totalAbilityScore: ranking.totalAbilityScore,

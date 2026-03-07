@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import {
+  boolean,
   integer,
   jsonb,
   pgTable,
@@ -45,11 +46,30 @@ export const bonusCards = pgTable('bonus_cards', {
 
 // --- Player accounts & game history ---
 
-export const players = pgTable('players', {
+export const players = pgTable(
+  'players',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    displayName: varchar('display_name', { length: 50 }).notNull(),
+    email: varchar('email', { length: 255 }).unique(),
+    passwordHash: varchar('password_hash', { length: 255 }),
+    isActivated: boolean('is_activated').notNull().default(false),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (t) => [unique('players_display_name_unique').on(t.displayName)],
+)
+
+export const authTokens = pgTable('auth_tokens', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-  displayName: varchar('display_name', { length: 50 }).notNull(),
+  playerId: uuid('player_id')
+    .references(() => players.id, { onDelete: 'cascade' })
+    .notNull(),
+  tokenHash: varchar('token_hash', { length: 64 }).notNull(),
+  type: varchar('type', { length: 20 }).notNull(),
+  expiresAt: timestamp('expires_at').notNull(),
+  usedAt: timestamp('used_at'),
   createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
 })
 
 export const gameRecords = pgTable('game_records', {

@@ -24,6 +24,13 @@
   text-align: center;
 }
 
+.playerInfo {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0 0 var(--space-4);
+  text-align: center;
+}
+
 .form {
   display: flex;
   flex-direction: column;
