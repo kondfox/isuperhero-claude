@@ -110,7 +110,7 @@ function createFallbackTask(ability: AbilityName, taskNumber: number): TaskDefin
   }
 }
 
-export class GameRoom extends Room<GameStateSchema> {
+export class GameRoom extends Room<{ state: GameStateSchema }> {
   private gameState!: GameState
   private taskIndex: Map<string, TaskDefinition> = new Map()
 

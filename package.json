@@ -31,5 +31,8 @@
   },
   "trustedDependencies": [
     "@biomejs/biome"
-  ]
+  ],
+  "overrides": {
+    "@colyseus/core": "0.17.39"
+  }
 }
