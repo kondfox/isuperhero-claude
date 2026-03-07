@@ -17,17 +17,19 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@colyseus/schema": "^2.0.4",
-    "@colyseus/ws-transport": "0.15.3",
+    "@colyseus/core": "0.17.39",
+    "@colyseus/schema": "^4.0.17",
+    "@colyseus/ws-transport": "^0.17.9",
     "@isuperhero/game-data": "workspace:*",
     "@isuperhero/game-logic": "workspace:*",
     "@isuperhero/types": "workspace:*",
-    "colyseus": "^0.15.23",
+    "colyseus": "^0.17.8",
     "drizzle-orm": "^0.45.1",
     "postgres": "^3.4.8"
   },
   "devDependencies": {
-    "@colyseus/testing": "^0.15.1",
+    "@colyseus/testing": "^0.17.11",
+    "@types/express": "^5.0.6",
     "drizzle-kit": "^0.31.9",
     "vitest": "^4.0.18"
   }

@@ -17,10 +17,10 @@ import { WebSocketClient } from '@colyseus/ws-transport'
 const originalRaw = WebSocketClient.prototype.raw
 
 WebSocketClient.prototype.raw = function patchedRaw(
-  data: ArrayLike<number>,
+  data: Uint8Array | Buffer,
   options?: { afterNextPatch?: boolean },
   cb?: (err?: Error) => void,
 ) {
-  const sendData = Array.isArray(data) ? new Uint8Array(data) : data
+  const sendData = Array.isArray(data) ? new Uint8Array(data as unknown as ArrayLike<number>) : data
   return originalRaw.call(this, sendData, options, cb)
 }
