@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '../components/Button/Button'
 import { useRoom } from '../context/RoomContext'
+import type { BonusCard } from '../types/game-state'
 import { AbilityName, GameEventType, GamePhase, TurnPhase } from '../types/game-state'
 import { GameOverOverlay } from './GameOverOverlay'
 import styles from './GamePage.module.css'
@@ -48,7 +49,22 @@ export function GamePage() {
   const eventLogRef = useRef<HTMLDivElement>(null)
   const [expandedPassport, setExpandedPassport] = useState<string | null>(null)
   const [eventLogExpanded, setEventLogExpanded] = useState(true)
+  const [boostChoiceCard, setBoostChoiceCard] = useState<BonusCard | null>(null)
   const eventCount = state?.eventLog.length ?? 0
+
+  const handleUseBonusCard = (card: BonusCard) => {
+    if (card.effectType === 'boostChoice') {
+      setBoostChoiceCard(card)
+      return
+    }
+    send('useBonusCard', { cardId: card.id })
+  }
+
+  const handleBoostChoiceAbility = (ability: AbilityName) => {
+    if (!boostChoiceCard) return
+    send('useBonusCard', { cardId: boostChoiceCard.id, params: { ability } })
+    setBoostChoiceCard(null)
+  }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll when event count changes
   useEffect(() => {
@@ -154,6 +170,20 @@ export function GamePage() {
                   )
                 })}
               </div>
+              {(player.hasBattleAdvantage || player.hasDefeatImmunity) && (
+                <div className={styles.passiveBuffs} data-testid="passive-buffs">
+                  {player.hasBattleAdvantage && (
+                    <span className={styles.passiveBuff} title="Win battles with 4/5 abilities">
+                      Battle Advantage
+                    </span>
+                  )}
+                  {player.hasDefeatImmunity && (
+                    <span className={styles.passiveBuff} title="No ability loss on defeat">
+                      Defeat Immunity
+                    </span>
+                  )}
+                </div>
+              )}
               <div
                 className={styles.bonusTray}
                 data-testid="bonus-tray"
@@ -161,10 +191,23 @@ export function GamePage() {
               >
                 {player.bonusCards.length > 0 ? (
                   player.bonusCards.map((card) => (
-                    <span key={card.id} className={styles.bonusCard} title={card.description}>
+                    <div key={card.id} className={styles.bonusCard} title={card.description}>
                       <img src={card.imageUrl} alt={card.name} className={styles.bonusCardImage} />
-                      {card.name}
-                    </span>
+                      <span className={styles.bonusCardName}>{card.name}</span>
+                      {isMyTurn && player.id === myPlayerId && (
+                        <button
+                          type="button"
+                          className={styles.bonusCardUse}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleUseBonusCard(card)
+                          }}
+                          aria-label={`Use ${card.name}`}
+                        >
+                          Use
+                        </button>
+                      )}
+                    </div>
                   ))
                 ) : (
                   <span className={styles.bonusTrayEmpty}>No bonus cards</span>
@@ -376,6 +419,32 @@ export function GamePage() {
           )}
         </div>
       </div>
+
+      {boostChoiceCard && (
+        <div
+          className={styles.boostChoiceOverlay}
+          role="dialog"
+          aria-label="Choose ability to boost"
+        >
+          <div className={styles.boostChoicePanel}>
+            <p className={styles.sectionLabel}>Choose ability to boost (+1)</p>
+            <div className={styles.abilityGrid}>
+              {ALL_ABILITIES.map((ability) => (
+                <Button
+                  key={ability}
+                  variant="secondary"
+                  onClick={() => handleBoostChoiceAbility(ability)}
+                >
+                  {ABILITY_LABELS[ability]}
+                </Button>
+              ))}
+            </div>
+            <Button variant="danger" onClick={() => setBoostChoiceCard(null)}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
 
       {state.phase === GamePhase.Finished && state.winnerId && <GameOverOverlay state={state} />}
     </main>

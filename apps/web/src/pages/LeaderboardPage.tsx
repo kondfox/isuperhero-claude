@@ -18,11 +18,17 @@ export function LeaderboardPage() {
 
   useEffect(() => {
     fetch('/api/leaderboard?limit=20')
-      .then((res) => {
-        if (!res.ok) throw new Error(`Failed to load leaderboard (${res.status})`)
-        return res.json()
+      .then(async (res) => {
+        const data = await res.json()
+        if (!res.ok) {
+          if (data?.code === 'NO_DATABASE') {
+            throw new Error('Leaderboard is not available — database not configured')
+          }
+          throw new Error(`Failed to load leaderboard (${res.status})`)
+        }
+        return data as { entries: LeaderboardEntry[] }
       })
-      .then((data: { entries: LeaderboardEntry[] }) => {
+      .then((data) => {
         setEntries(data.entries)
         setLoading(false)
       })
