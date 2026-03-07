@@ -1,6 +1,14 @@
 import { getTableName } from 'drizzle-orm'
 import { describe, expect, it } from 'vitest'
-import { bonusCards, gameParticipants, gameRecords, monsters, players, tasks } from './schema'
+import {
+  authTokens,
+  bonusCards,
+  gameParticipants,
+  gameRecords,
+  monsters,
+  players,
+  tasks,
+} from './schema'
 
 describe('database schema', () => {
   it('defines tasks table', () => {
@@ -25,5 +33,9 @@ describe('database schema', () => {
 
   it('defines game_participants table', () => {
     expect(getTableName(gameParticipants)).toBe('game_participants')
+  })
+
+  it('defines auth_tokens table', () => {
+    expect(getTableName(authTokens)).toBe('auth_tokens')
   })
 })

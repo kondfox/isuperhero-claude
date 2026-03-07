@@ -3,6 +3,7 @@ import { count, eq, sql } from 'drizzle-orm'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 import type * as schema from '../db/schema'
 import { gameParticipants, gameRecords, players } from '../db/schema'
+import { handleAuthRequest, handleTestRequest } from './auth-routes'
 
 type Db = PostgresJsDatabase<typeof schema>
 
@@ -165,6 +166,16 @@ export async function handleApiRequest(
 ): Promise<boolean> {
   const url = new URL(req.url ?? '/', `http://${req.headers.host}`)
   const pathname = url.pathname
+
+  // Auth routes
+  if (pathname.startsWith('/api/auth/')) {
+    return handleAuthRequest(req, res, db)
+  }
+
+  // Test routes (non-production only)
+  if (pathname.startsWith('/api/test/') && process.env.NODE_ENV !== 'production') {
+    return handleTestRequest(req, res, db)
+  }
 
   // POST /api/players
   if (pathname === '/api/players' && req.method === 'POST') {

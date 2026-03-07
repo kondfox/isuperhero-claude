@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
+import { loginViaApi } from './auth-helper'
 import { test } from './fixtures'
 
 const { Given, When } = createBdd(test)
@@ -14,9 +15,11 @@ Given(
     world.aliceContext = aliceContext
     world.alicePage = alicePage
 
+    // Authenticate Alice via API
+    await loginViaApi(alicePage, playerName)
+
     // Navigate to create room form
     await alicePage.goto('/lobby?mode=create')
-    await alicePage.getByLabel('Your Name').fill(playerName)
     await alicePage.getByLabel('Max Players').selectOption({ label: `${maxPlayers} Players` })
     await alicePage.getByRole('button', { name: 'Create Room' }).click()
 
