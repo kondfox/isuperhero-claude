@@ -24,7 +24,7 @@
     "storybook": "bun run --filter @isuperhero/web storybook"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.4",
+    "@biomejs/biome": "2.4.6",
     "husky": "^9.1.7",
     "typescript": "^5.7.3",
     "vitest": "^4.0.18"
