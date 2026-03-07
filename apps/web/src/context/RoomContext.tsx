@@ -25,6 +25,7 @@ const WS_URL = getWsUrl()
 
 export interface CreateRoomOptions {
   name: string
+  playerId?: string
   difficultyLevel: number
   roomName?: string
   maxPlayers?: number
@@ -33,6 +34,7 @@ export interface CreateRoomOptions {
 
 export interface JoinRoomOptions {
   name: string
+  playerId?: string
   difficultyLevel: number
 }
 

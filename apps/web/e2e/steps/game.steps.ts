@@ -1,5 +1,6 @@
 import { expect, type Page } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
+import { loginViaApi } from './auth-helper'
 import { test, type World } from './fixtures'
 
 const { Given, When, Then } = createBdd(test)
@@ -15,8 +16,10 @@ Given(
     world.aliceContext = aliceContext
     world.alicePage = alicePage
 
+    // Authenticate Alice via API
+    await loginViaApi(alicePage, player1)
+
     await alicePage.goto('/lobby?mode=create')
-    await alicePage.getByLabel('Your Name').fill(player1)
     await alicePage.getByLabel('Max Players').selectOption({ label: '2 Players' })
     await alicePage.getByRole('button', { name: 'Create Room' }).click()
     await expect(alicePage.getByRole('heading', { name: 'Lobby' })).toBeVisible()
@@ -24,10 +27,12 @@ Given(
     const roomCode = await alicePage.locator('[class*=codeValue]').textContent()
     world.roomCode = roomCode?.trim() ?? ''
 
+    // Authenticate Bob via API
+    await loginViaApi(page, player2)
+
     // Bob joins
     await page.goto('/lobby?mode=join')
     await page.getByLabel('Room Code').fill(world.roomCode)
-    await page.getByLabel('Your Name').fill(player2)
     await page.getByRole('button', { name: 'Join Room' }).click()
     await expect(page.getByRole('heading', { name: 'Lobby' })).toBeVisible()
 

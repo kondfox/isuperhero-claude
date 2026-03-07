@@ -2,13 +2,14 @@ import { type FormEvent, useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { Button } from '../components/Button/Button'
 import { PlayerList } from '../components/PlayerList/PlayerList'
+import { useAuth } from '../context/AuthContext'
 import { useRoom } from '../context/RoomContext'
 import { DifficultyLevel, GamePhase } from '../types/game-state'
 import styles from './LobbyPage.module.css'
 
 function CreateRoomForm() {
+  const { user } = useAuth()
   const { createRoom, error, clearError } = useRoom()
-  const [playerName, setPlayerName] = useState('')
   const [difficulty, setDifficulty] = useState(DifficultyLevel.Level1)
   const [roomName, setRoomName] = useState('Game Room')
   const [maxPlayers, setMaxPlayers] = useState(4)
@@ -17,11 +18,12 @@ function CreateRoomForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!playerName.trim()) return
+    if (!user) return
     setSubmitting(true)
     clearError()
     await createRoom({
-      name: playerName.trim(),
+      name: user.username,
+      playerId: user.id,
       difficultyLevel: difficulty,
       roomName: roomName.trim() || 'Game Room',
       maxPlayers,
@@ -33,23 +35,10 @@ function CreateRoomForm() {
   return (
     <div className={styles.card}>
       <h1 className={styles.title}>Create Room</h1>
+      <p className={styles.playerInfo}>
+        Playing as <strong>{user?.username}</strong>
+      </p>
       <form className={styles.form} onSubmit={handleSubmit}>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="playerName">
-            Your Name
-          </label>
-          <input
-            id="playerName"
-            className={styles.input}
-            type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            placeholder="Enter your name"
-            required
-            maxLength={20}
-          />
-        </div>
-
         <div className={styles.row}>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="difficulty">
@@ -119,7 +108,7 @@ function CreateRoomForm() {
         {error && <div className={styles.error}>{error}</div>}
 
         <div className={styles.actions}>
-          <Button type="submit" disabled={submitting || !playerName.trim()}>
+          <Button type="submit" disabled={submitting}>
             {submitting ? 'Creating...' : 'Create Room'}
           </Button>
         </div>
@@ -132,19 +121,20 @@ function CreateRoomForm() {
 }
 
 function JoinRoomForm() {
+  const { user } = useAuth()
   const { joinRoom, error, clearError } = useRoom()
-  const [playerName, setPlayerName] = useState('')
   const [difficulty, setDifficulty] = useState(DifficultyLevel.Level1)
   const [roomCode, setRoomCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!playerName.trim() || !roomCode.trim()) return
+    if (!user || !roomCode.trim()) return
     setSubmitting(true)
     clearError()
     await joinRoom(roomCode.trim(), {
-      name: playerName.trim(),
+      name: user.username,
+      playerId: user.id,
       difficultyLevel: difficulty,
     })
     setSubmitting(false)
@@ -153,6 +143,9 @@ function JoinRoomForm() {
   return (
     <div className={styles.card}>
       <h1 className={styles.title}>Join Room</h1>
+      <p className={styles.playerInfo}>
+        Playing as <strong>{user?.username}</strong>
+      </p>
       <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.field}>
           <label className={styles.label} htmlFor="roomCode">
@@ -166,22 +159,6 @@ function JoinRoomForm() {
             onChange={(e) => setRoomCode(e.target.value)}
             placeholder="Enter room code"
             required
-          />
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="joinPlayerName">
-            Your Name
-          </label>
-          <input
-            id="joinPlayerName"
-            className={styles.input}
-            type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            placeholder="Enter your name"
-            required
-            maxLength={20}
           />
         </div>
 
@@ -204,7 +181,7 @@ function JoinRoomForm() {
         {error && <div className={styles.error}>{error}</div>}
 
         <div className={styles.actions}>
-          <Button type="submit" disabled={submitting || !playerName.trim() || !roomCode.trim()}>
+          <Button type="submit" disabled={submitting || !roomCode.trim()}>
             {submitting ? 'Joining...' : 'Join Room'}
           </Button>
         </div>
@@ -281,9 +258,20 @@ function LobbyView() {
 }
 
 export function LobbyPage() {
+  const { isLoggedIn } = useAuth()
   const { room } = useRoom()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const mode = searchParams.get('mode') ?? 'create'
+
+  // Redirect to home if not logged in
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/login')
+    }
+  }, [isLoggedIn, navigate])
+
+  if (!isLoggedIn) return null
 
   return (
     <main className={styles.page}>

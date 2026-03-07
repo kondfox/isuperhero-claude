@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
+import { AuthContext, type AuthContextValue } from '../context/AuthContext'
 import { RoomContext } from '../context/RoomContext'
 import type { GameSnapshot } from '../types/game-state'
 import { AbilityName, DifficultyLevel } from '../types/game-state'
@@ -46,7 +47,7 @@ const mockState: GameSnapshot = {
   },
 }
 
-const defaultContext = {
+const defaultRoomContext = {
   room: null as Room | null,
   state: null as GameSnapshot | null,
   myPlayerId: null as string | null,
@@ -59,15 +60,36 @@ const defaultContext = {
   clearError: vi.fn(),
 }
 
-function renderLobbyPage(mode: string, contextOverrides: Partial<typeof defaultContext> = {}) {
+const loggedInAuthContext: AuthContextValue = {
+  user: { id: 'db-uuid-1', username: 'Alice', email: 'alice@example.com' },
+  isLoggedIn: true,
+  loading: false,
+  error: null,
+  register: vi.fn(),
+  login: vi.fn(),
+  logout: vi.fn(),
+  forgotPassword: vi.fn(),
+  resetPassword: vi.fn(),
+  getAccessToken: () => 'mock-token',
+  clearError: vi.fn(),
+}
+
+function renderLobbyPage(
+  mode: string,
+  roomOverrides: Partial<typeof defaultRoomContext> = {},
+  authOverrides: Partial<AuthContextValue> = {},
+) {
   return render(
-    <RoomContext.Provider value={{ ...defaultContext, ...contextOverrides }}>
-      <MemoryRouter initialEntries={[`/lobby?mode=${mode}`]}>
-        <Routes>
-          <Route path="/lobby" element={<LobbyPage />} />
-        </Routes>
-      </MemoryRouter>
-    </RoomContext.Provider>,
+    <AuthContext.Provider value={{ ...loggedInAuthContext, ...authOverrides }}>
+      <RoomContext.Provider value={{ ...defaultRoomContext, ...roomOverrides }}>
+        <MemoryRouter initialEntries={[`/lobby?mode=${mode}`]}>
+          <Routes>
+            <Route path="/lobby" element={<LobbyPage />} />
+            <Route path="/login" element={<div>Login</div>} />
+          </Routes>
+        </MemoryRouter>
+      </RoomContext.Provider>
+    </AuthContext.Provider>,
   )
 }
 
@@ -80,6 +102,11 @@ describe('LobbyPage - Create Room form', () => {
     expect(options[1]).toHaveTextContent('Ages 7')
     expect(options[2]).toHaveTextContent('Ages 12')
   })
+
+  it('shows "Playing as" with the logged-in player name', () => {
+    renderLobbyPage('create')
+    expect(screen.getByText('Alice')).toBeInTheDocument()
+  })
 })
 
 describe('LobbyPage - Join Room form', () => {
@@ -90,6 +117,26 @@ describe('LobbyPage - Join Room form', () => {
     expect(options[0]).toHaveTextContent('Ages 5')
     expect(options[1]).toHaveTextContent('Ages 7')
     expect(options[2]).toHaveTextContent('Ages 12')
+  })
+
+  it('calls joinRoom with room code, player name and playerId on submit', async () => {
+    const joinRoom = vi.fn()
+    renderLobbyPage('join', { joinRoom })
+
+    const user = userEvent.setup()
+    await user.type(screen.getByLabelText('Room Code'), 'ABC123')
+    await user.click(screen.getByRole('button', { name: /join room/i }))
+
+    expect(joinRoom).toHaveBeenCalledWith('ABC123', {
+      name: 'Alice',
+      playerId: 'db-uuid-1',
+      difficultyLevel: DifficultyLevel.Level1,
+    })
+  })
+
+  it('shows error when join fails', () => {
+    renderLobbyPage('join', { error: 'no rooms found with provided criteria' })
+    expect(screen.getByText('no rooms found with provided criteria')).toBeInTheDocument()
   })
 })
 
@@ -123,7 +170,7 @@ describe('LobbyPage - Lobby view', () => {
 
   it('shows player name in the list', () => {
     renderLobbyPage('create', connectedContext)
-    expect(screen.getByText('Alice')).toBeInTheDocument()
+    expect(screen.getAllByText('Alice').length).toBeGreaterThanOrEqual(1)
   })
 
   it('shows "(You)" marker for current player', () => {
@@ -145,7 +192,6 @@ describe('LobbyPage - Lobby view', () => {
     }
     renderLobbyPage('create', { ...connectedContext, state: multiPlayerState })
     expect(screen.getByText('Players (2/4)')).toBeInTheDocument()
-    expect(screen.getByText('Alice')).toBeInTheDocument()
     expect(screen.getByText('Bob')).toBeInTheDocument()
   })
 
@@ -160,31 +206,14 @@ describe('LobbyPage - Lobby view', () => {
 
   it('shows the creator in the player list immediately upon entering the lobby', () => {
     renderLobbyPage('create', connectedContext)
-    // The player should be visible (not "No players yet")
     expect(screen.queryByText('No players yet')).not.toBeInTheDocument()
-    expect(screen.getByText('Alice')).toBeInTheDocument()
     expect(screen.getByText('(You)')).toBeInTheDocument()
   })
 })
 
-describe('LobbyPage - Join Room form', () => {
-  it('calls joinRoom with room code and options on submit', async () => {
-    const joinRoom = vi.fn()
-    renderLobbyPage('join', { joinRoom })
-
-    const user = userEvent.setup()
-    await user.type(screen.getByLabelText('Room Code'), 'ABC123')
-    await user.type(screen.getByLabelText('Your Name'), 'Bob')
-    await user.click(screen.getByRole('button', { name: /join room/i }))
-
-    expect(joinRoom).toHaveBeenCalledWith('ABC123', {
-      name: 'Bob',
-      difficultyLevel: DifficultyLevel.Level1,
-    })
-  })
-
-  it('shows error when join fails', () => {
-    renderLobbyPage('join', { error: 'no rooms found with provided criteria' })
-    expect(screen.getByText('no rooms found with provided criteria')).toBeInTheDocument()
+describe('LobbyPage - auth redirect', () => {
+  it('redirects to login when not logged in', () => {
+    renderLobbyPage('create', {}, { isLoggedIn: false, user: null })
+    expect(screen.getByText('Login')).toBeInTheDocument()
   })
 })

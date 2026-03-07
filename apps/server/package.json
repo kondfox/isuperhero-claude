@@ -23,13 +23,17 @@
     "@isuperhero/game-data": "workspace:*",
     "@isuperhero/game-logic": "workspace:*",
     "@isuperhero/types": "workspace:*",
+    "argon2": "^0.44.0",
     "colyseus": "^0.17.8",
     "drizzle-orm": "^0.45.1",
+    "jose": "^6.2.0",
+    "nodemailer": "^8.0.1",
     "postgres": "^3.4.8"
   },
   "devDependencies": {
     "@colyseus/testing": "^0.17.11",
     "@types/express": "^5.0.6",
+    "@types/nodemailer": "^7.0.11",
     "drizzle-kit": "^0.31.9",
     "vitest": "^4.0.18"
   }
