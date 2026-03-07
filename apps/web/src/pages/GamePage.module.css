@@ -136,6 +136,26 @@
   color: var(--color-warning);
 }
 
+.passiveBuffs {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--space-2);
+}
+
+.passiveBuff {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 193, 7, 0.15);
+  color: var(--color-warning);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
 .bonusTray {
   display: flex;
   gap: var(--space-1);
@@ -161,6 +181,51 @@
   height: 20px;
   object-fit: cover;
   border-radius: 2px;
+}
+
+.bonusCardName {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bonusCardUse {
+  font-size: 10px;
+  padding: 1px 6px;
+  border: 1px solid var(--color-secondary);
+  border-radius: var(--radius-sm);
+  background: var(--color-secondary);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+
+.bonusCardUse:hover {
+  opacity: 0.85;
+}
+
+.boostChoiceOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.boostChoicePanel {
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 280px;
+  max-width: 90vw;
+  box-shadow: var(--shadow-lg);
 }
 
 .bonusTrayEmpty {
