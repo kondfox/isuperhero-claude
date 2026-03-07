@@ -1,6 +1,6 @@
-import { expect } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
 import { createBdd } from 'playwright-bdd'
-import { test } from './fixtures'
+import { test, type World } from './fixtures'
 
 const { Given, When, Then } = createBdd(test)
 
@@ -334,6 +334,260 @@ Then('all bonus trays should be empty at the start', async ({ page }) => {
   for (let i = 0; i < count; i++) {
     await expect(trays.nth(i)).toHaveAttribute('data-empty', 'true')
   }
+})
+
+// === Bonus card usage ===
+
+async function drawUntilBonusCard(
+  activePage: Page,
+  inactivePage: Page,
+  world: World,
+  filter?: 'boost' | 'passive',
+): Promise<void> {
+  for (let attempt = 0; attempt < 20; attempt++) {
+    // Determine who is currently active
+    const textA = await activePage.getByTestId('turn-indicator').textContent()
+    const currentActive = textA?.includes('Your turn') ? activePage : inactivePage
+    const currentInactive = currentActive === activePage ? inactivePage : activePage
+
+    // Draw from Cosmos
+    const drawBtn = currentActive.getByRole('button', { name: 'Draw from Cosmos' })
+    await expect(drawBtn).toBeVisible({ timeout: 5000 })
+    await drawBtn.click()
+
+    // Wait for draw to resolve
+    const endTurnBtn = currentActive.getByRole('button', { name: 'End Turn' })
+    const penaltySec = currentActive.getByTestId('battle-defeat-penalty')
+    await Promise.race([
+      endTurnBtn.waitFor({ state: 'visible', timeout: 10000 }),
+      penaltySec.waitFor({ state: 'visible', timeout: 10000 }),
+    ])
+
+    // Check if a bonus card was drawn (look at drawn-card section)
+    const drawnCard = currentActive.getByTestId('drawn-card')
+    const hasBonusText = await drawnCard
+      .getByText(/Bonus:/i)
+      .isVisible()
+      .catch(() => false)
+
+    if (hasBonusText) {
+      // Check if it matches the filter
+      if (filter === 'boost') {
+        // Check if it's a boost card (any +1 ability card)
+        const bonusText = await drawnCard.textContent()
+        const isBoost =
+          bonusText?.includes('Бонус: Управление') ||
+          bonusText?.includes('Бонус: Связь') ||
+          bonusText?.includes('Бонус: Ориентация') ||
+          bonusText?.includes('Бонус: Переработка') ||
+          bonusText?.includes('Бонус: Движение-Энергия') ||
+          bonusText?.includes('Бонус: Выбор')
+
+        if (isBoost) {
+          world.activePlayerPage = currentActive
+          world.inactivePlayerPage = currentInactive
+          return
+        }
+      } else if (filter === 'passive') {
+        const bonusText = await drawnCard.textContent()
+        const isPassive =
+          bonusText?.includes('Преимущество в бою') ||
+          bonusText?.includes('Иммунитет от поражения') ||
+          bonusText?.includes('Иммунитет + цепочка')
+
+        if (isPassive) {
+          world.activePlayerPage = currentActive
+          world.inactivePlayerPage = currentInactive
+          return
+        }
+      } else {
+        // Any bonus card
+        world.activePlayerPage = currentActive
+        world.inactivePlayerPage = currentInactive
+        return
+      }
+    }
+
+    // Resolve penalty if needed, then end turn
+    if (await penaltySec.isVisible()) {
+      await penaltySec.getByRole('button').first().click()
+    }
+    await endTurnBtn.waitFor({ state: 'visible', timeout: 5000 })
+    await endTurnBtn.click()
+
+    // Wait for turn to advance
+    await expect(currentInactive.getByText('Your turn')).toBeVisible({ timeout: 5000 })
+  }
+
+  throw new Error(`No ${filter ?? ''} bonus card drawn after 20 attempts`)
+}
+
+When('the active player draws until a bonus card is gained', async ({ page, world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const other = world.activePlayerPage === page ? world.alicePage! : page
+  await drawUntilBonusCard(world.activePlayerPage, other, world)
+})
+
+When('the active player draws until a boost bonus card is gained', async ({ page, world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const other = world.activePlayerPage === page ? world.alicePage! : page
+  await drawUntilBonusCard(world.activePlayerPage, other, world, 'boost')
+})
+
+When('the active player draws until a passive bonus card is gained', async ({ page, world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const other = world.activePlayerPage === page ? world.alicePage! : page
+  await drawUntilBonusCard(world.activePlayerPage, other, world, 'passive')
+})
+
+When('the active player ends their turn after drawing', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const endBtn = world.activePlayerPage.getByRole('button', { name: 'End Turn' })
+  await expect(endBtn).toBeVisible({ timeout: 5000 })
+  await endBtn.click()
+})
+
+When('the new active player draws until a bonus card is gained', async ({ page, world }) => {
+  if (!world.inactivePlayerPage) throw new Error('Inactive player not determined')
+  // Wait for the previously inactive player to become active
+  await expect(world.inactivePlayerPage.getByText('Your turn')).toBeVisible({ timeout: 5000 })
+  // Swap roles
+  const newActive = world.inactivePlayerPage
+  const newInactive = world.activePlayerPage!
+  world.activePlayerPage = newActive
+  world.inactivePlayerPage = newInactive
+  const other = newActive === page ? world.alicePage! : page
+  await drawUntilBonusCard(newActive, other, world)
+})
+
+When('the new active player draws until a boost bonus card is gained', async ({ page, world }) => {
+  if (!world.inactivePlayerPage) throw new Error('Inactive player not determined')
+  await expect(world.inactivePlayerPage.getByText('Your turn')).toBeVisible({ timeout: 5000 })
+  const newActive = world.inactivePlayerPage
+  const newInactive = world.activePlayerPage!
+  world.activePlayerPage = newActive
+  world.inactivePlayerPage = newInactive
+  const other = newActive === page ? world.alicePage! : page
+  await drawUntilBonusCard(newActive, other, world, 'boost')
+})
+
+When(
+  'the new active player draws until a passive bonus card is gained',
+  async ({ page, world }) => {
+    if (!world.inactivePlayerPage) throw new Error('Inactive player not determined')
+    await expect(world.inactivePlayerPage.getByText('Your turn')).toBeVisible({ timeout: 5000 })
+    const newActive = world.inactivePlayerPage
+    const newInactive = world.activePlayerPage!
+    world.activePlayerPage = newActive
+    world.inactivePlayerPage = newInactive
+    const other = newActive === page ? world.alicePage! : page
+    await drawUntilBonusCard(newActive, other, world, 'passive')
+  },
+)
+
+Then('the active player should see a Use button on their bonus card', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const useBtn = world.activePlayerPage.locator('[class*=bonusCardUse]').first()
+  await expect(useBtn).toBeVisible({ timeout: 5000 })
+})
+
+When('the active player uses their first bonus card', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const page = world.activePlayerPage
+  const useBtn = page.locator('[class*=bonusCardUse]').first()
+  await expect(useBtn).toBeVisible({ timeout: 5000 })
+  await useBtn.click()
+
+  // If a boostChoice dialog appeared, pick the first ability
+  const choiceDialog = page.locator('[class*=boostChoicePanel]')
+  if (await choiceDialog.isVisible().catch(() => false)) {
+    await choiceDialog.getByRole('button', { name: 'Management' }).click()
+  }
+})
+
+Then('the bonus card should be removed from the tray', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  // After using the card, check that the tray has fewer cards (or is empty)
+  await expect(async () => {
+    const page = world.activePlayerPage!
+    // The card should have been removed; check that Use buttons count decreased
+    // or the tray shows "No bonus cards"
+    const useButtons = page.locator('[class*=bonusCardUse]')
+    const emptyTrays = page.getByText('No bonus cards')
+    const btnCount = await useButtons.count()
+    const hasEmpty = await emptyTrays
+      .first()
+      .isVisible()
+      .catch(() => false)
+    expect(btnCount === 0 || hasEmpty).toBeTruthy()
+  }).toPass({ timeout: 5000 })
+})
+
+Then(
+  "the previously inactive player should not see Use buttons on the other player's bonus cards",
+  async ({ world }) => {
+    if (!world.inactivePlayerPage) throw new Error('Inactive player not determined')
+    // Wait for turn to advance
+    await expect(world.inactivePlayerPage.getByText('Your turn')).toBeVisible({ timeout: 5000 })
+    // Check the previously active player's passport — it should NOT have Use buttons
+    // (the now-inactive player's bonus cards should not have Use buttons visible to the other player)
+    const page = world.inactivePlayerPage
+    // The page should have no Use buttons for the other player's cards
+    // We check all passports — only the current player's cards should show Use
+    const otherPlayerTray = page.getByTestId('bonus-tray').first()
+    const useButtons = otherPlayerTray.locator('[class*=bonusCardUse]')
+    // Could be 0 if the other player has no cards, or still 0 if they do but it's not their turn
+    const count = await useButtons.count()
+    // Use buttons should only appear on own passport and own turn
+    expect(count).toBeLessThanOrEqual(0)
+  },
+)
+
+Then(
+  'the active player should see the ability increase after using the boost card',
+  async ({ world }) => {
+    if (!world.activePlayerPage) throw new Error('Active player not determined')
+    const page = world.activePlayerPage
+
+    // Find the active player's passport (the one with a Use button in its bonus tray)
+    const myPassport = page.getByTestId('player-passport').filter({
+      has: page.locator('[class*=bonusCardUse]'),
+    })
+    await expect(myPassport).toBeVisible({ timeout: 5000 })
+
+    // Record ability scores before using the card
+    const scoresBefore = await myPassport.getByTestId('ability-score').allTextContents()
+    const totalBefore = scoresBefore.reduce(
+      (sum, t) => sum + Number.parseInt(t.replace(/\D/g, ''), 10),
+      0,
+    )
+
+    // Use the bonus card
+    const useBtn = myPassport.locator('[class*=bonusCardUse]').first()
+    await useBtn.click()
+
+    // Handle boostChoice dialog if it appears
+    const choiceDialog = page.locator('[class*=boostChoicePanel]')
+    if (await choiceDialog.isVisible().catch(() => false)) {
+      await choiceDialog.getByRole('button').first().click()
+    }
+
+    // Check ability total increased
+    await expect(async () => {
+      const scoresAfter = await myPassport.getByTestId('ability-score').allTextContents()
+      const totalAfter = scoresAfter.reduce(
+        (sum, t) => sum + Number.parseInt(t.replace(/\D/g, ''), 10),
+        0,
+      )
+      expect(totalAfter).toBeGreaterThan(totalBefore)
+    }).toPass({ timeout: 5000 })
+  },
+)
+
+Then('the active player should see a passive buff indicator', async ({ world }) => {
+  if (!world.activePlayerPage) throw new Error('Active player not determined')
+  const page = world.activePlayerPage
+  await expect(page.getByTestId('passive-buffs')).toBeVisible({ timeout: 10000 })
 })
 
 // === Cosmos deck ===
