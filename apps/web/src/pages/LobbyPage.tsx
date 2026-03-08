@@ -258,20 +258,9 @@ function LobbyView() {
 }
 
 export function LobbyPage() {
-  const { isLoggedIn } = useAuth()
   const { room } = useRoom()
   const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
   const mode = searchParams.get('mode') ?? 'create'
-
-  // Redirect to home if not logged in
-  useEffect(() => {
-    if (!isLoggedIn) {
-      navigate('/login')
-    }
-  }, [isLoggedIn, navigate])
-
-  if (!isLoggedIn) return null
 
   return (
     <main className={styles.page}>
