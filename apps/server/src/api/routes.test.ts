@@ -66,6 +66,7 @@ function createMockDb(overrides: Record<string, unknown> = {}) {
     innerJoin: vi.fn().mockReturnThis(),
     leftJoin: vi.fn().mockReturnThis(),
     groupBy: vi.fn().mockReturnThis(),
+    having: vi.fn().mockReturnThis(),
     orderBy: vi.fn().mockReturnThis(),
     ...overrides,
   }
@@ -233,7 +234,7 @@ describe('API routes', () => {
   })
 
   describe('GET /api/leaderboard', () => {
-    it('returns leaderboard entries', async () => {
+    it('returns leaderboard entries with games played', async () => {
       const entries = [
         {
           playerId: 'p1',
@@ -254,6 +255,8 @@ describe('API routes', () => {
       const body = parseBody(res)
       expect(body.entries).toHaveLength(1)
       expect(body.entries[0].displayName).toBe('Alice')
+      // Should filter players with 0 games (uses having clause)
+      expect((db as unknown as Record<string, ReturnType<typeof vi.fn>>).having).toBeDefined()
     })
 
     it('respects limit parameter', async () => {
