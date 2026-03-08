@@ -17,3 +17,9 @@ Feature: Leaderboard Page
     And I am on the leaderboard page
     Then I should see the heading "Leaderboard"
     And the leaderboard should finish loading
+
+  Scenario: Leaderboard shows empty state when no games played
+    Given I am logged in as "leaderboard_user4"
+    And I am on the leaderboard page
+    And the leaderboard should finish loading
+    Then I should see the text "No games played yet"

@@ -41,6 +41,16 @@ Feature: Profile Page
     And I click the "Change Password" button
     Then I should see the text "Passwords do not match"
 
+  Scenario: Profile page shows game history section
+    Given I am logged in as "profile_history_user"
+    When I navigate to "/profile"
+    Then I should see the heading "Game History"
+
+  Scenario: Profile page shows empty game history
+    Given I am logged in as "profile_empty_history"
+    When I navigate to "/profile"
+    Then I should see the text "No games played yet"
+
   Scenario: Homepage links to profile
     Given I am logged in as "profile_link_user"
     When I am on the homepage

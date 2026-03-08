@@ -1,8 +1,90 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import { Button } from '../components/Button/Button'
 import { useAuth } from '../context/AuthContext'
 import styles from './AuthPage.module.css'
+import profileStyles from './ProfilePage.module.css'
+
+interface GameHistoryEntry {
+  gameId: string
+  roomCode: string
+  startedAt: string
+  finishedAt: string | null
+  rank: number | null
+  monstersCount: number
+  won: boolean
+}
+
+function GameHistory({ userId }: { userId: string }) {
+  const [games, setGames] = useState<GameHistoryEntry[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch(`/api/players/${userId}/history`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Failed to load')
+        return res.json() as Promise<{ games: GameHistoryEntry[] }>
+      })
+      .then((data) => {
+        setGames(data.games)
+        setLoading(false)
+      })
+      .catch(() => {
+        setLoading(false)
+      })
+  }, [userId])
+
+  if (loading) return <p className={profileStyles.muted}>Loading game history...</p>
+
+  if (games.length === 0) return <p className={profileStyles.muted}>No games played yet</p>
+
+  const wins = games.filter((g) => g.won).length
+  const totalMonsters = games.reduce((sum, g) => sum + g.monstersCount, 0)
+
+  return (
+    <>
+      <div className={profileStyles.statsRow}>
+        <div className={profileStyles.stat}>
+          <span className={profileStyles.statValue}>{games.length}</span>
+          <span className={profileStyles.statLabel}>Games</span>
+        </div>
+        <div className={profileStyles.stat}>
+          <span className={profileStyles.statValue}>{wins}</span>
+          <span className={profileStyles.statLabel}>Wins</span>
+        </div>
+        <div className={profileStyles.stat}>
+          <span className={profileStyles.statValue}>{totalMonsters}</span>
+          <span className={profileStyles.statLabel}>Monsters</span>
+        </div>
+      </div>
+
+      <table className={profileStyles.historyTable}>
+        <thead>
+          <tr>
+            <th>Room</th>
+            <th>Result</th>
+            <th>Rank</th>
+            <th>Monsters</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {games.map((game) => (
+            <tr key={game.gameId}>
+              <td>{game.roomCode}</td>
+              <td className={game.won ? profileStyles.win : profileStyles.loss}>
+                {game.won ? 'Win' : 'Loss'}
+              </td>
+              <td>{game.rank ?? '-'}</td>
+              <td>{game.monstersCount}</td>
+              <td>{game.finishedAt ? new Date(game.finishedAt).toLocaleDateString() : '-'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
+  )
+}
 
 export function ProfilePage() {
   const { user, getAccessToken } = useAuth()
@@ -129,6 +211,20 @@ export function ProfilePage() {
             </Button>
           </div>
         </form>
+
+        <hr
+          style={{
+            margin: 'var(--space-6) 0',
+            border: 'none',
+            borderTop: '1px solid color-mix(in srgb, var(--color-text-muted) 20%, transparent)',
+          }}
+        />
+
+        <h2 className={styles.title} style={{ fontSize: 'var(--font-size-lg)' }}>
+          Game History
+        </h2>
+
+        {user && <GameHistory userId={user.id} />}
 
         <Link to="/" className={styles.backLink}>
           Back to home

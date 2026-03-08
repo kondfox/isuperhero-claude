@@ -144,6 +144,7 @@ async function handleLeaderboard(
     .leftJoin(gameParticipants, eq(gameParticipants.playerId, players.id))
     .leftJoin(gameRecords, eq(gameRecords.id, gameParticipants.gameId))
     .groupBy(players.id, players.displayName)
+    .having(sql`count(${gameParticipants.id}) > 0`)
     .orderBy(sql`wins desc, total_monsters desc`)
     .limit(limit)
 
