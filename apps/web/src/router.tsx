@@ -8,6 +8,7 @@ import { HomePage } from './pages/HomePage'
 import { LeaderboardPage } from './pages/LeaderboardPage'
 import { LobbyPage } from './pages/LobbyPage'
 import { LoginPage } from './pages/LoginPage'
+import { ProfilePage } from './pages/ProfilePage'
 import { RegisterPage } from './pages/RegisterPage'
 import { ResetPasswordPage } from './pages/ResetPasswordPage'
 
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
           { path: 'lobby', element: <LobbyPage /> },
           { path: 'game/:roomId', element: <GamePage /> },
           { path: 'leaderboard', element: <LeaderboardPage /> },
+          { path: 'profile', element: <ProfilePage /> },
         ],
       },
     ],

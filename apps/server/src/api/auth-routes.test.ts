@@ -27,8 +27,16 @@ function createMockReqWithAuth(
   token: string,
   body?: string,
 ): IncomingMessage {
-  const req = createMockReq(method, url, body)
+  // Don't pass body to createMockReq — it uses nextTick which fires before
+  // async handlers (e.g. JWT verify) finish and call readBody.
+  const req = createMockReq(method, url)
   req.headers.authorization = `Bearer ${token}`
+  if (body !== undefined) {
+    setTimeout(() => {
+      req.emit('data', Buffer.from(body))
+      req.emit('end')
+    }, 10)
+  }
   return req
 }
 
@@ -550,6 +558,92 @@ describe('GET /api/auth/me', () => {
     expect(body.id).toBe('player-1')
     expect(body.username).toBe('alice')
     expect(body.email).toBe('alice@example.com')
+  })
+})
+
+describe('POST /api/auth/change-password', () => {
+  it('returns 401 without auth header', async () => {
+    const req = createMockReq(
+      'POST',
+      '/api/auth/change-password',
+      JSON.stringify({ currentPassword: 'old', newPassword: 'newpassword123' }),
+    )
+    const res = createMockRes()
+    await handleAuthRequest(req, res, createMockDb())
+    expect(res._status).toBe(401)
+    expect(parseBody(res).code).toBe('UNAUTHORIZED')
+  })
+
+  it('returns 400 for missing fields', async () => {
+    const { signAccessToken } = await import('../auth/jwt')
+    const token = await signAccessToken({ sub: 'player-1', username: 'alice' })
+    const req = createMockReqWithAuth(
+      'POST',
+      '/api/auth/change-password',
+      token,
+      JSON.stringify({ currentPassword: 'old' }),
+    )
+    const res = createMockRes()
+    await handleAuthRequest(req, res, createMockDb())
+    expect(res._status).toBe(400)
+    expect(parseBody(res).code).toBe('MISSING_FIELDS')
+  })
+
+  it('returns 400 for short new password', async () => {
+    const { signAccessToken } = await import('../auth/jwt')
+    const token = await signAccessToken({ sub: 'player-1', username: 'alice' })
+    const req = createMockReqWithAuth(
+      'POST',
+      '/api/auth/change-password',
+      token,
+      JSON.stringify({ currentPassword: 'oldpassword', newPassword: 'short' }),
+    )
+    const res = createMockRes()
+    await handleAuthRequest(req, res, createMockDb())
+    expect(res._status).toBe(400)
+    expect(parseBody(res).code).toBe('PASSWORD_TOO_SHORT')
+  })
+
+  it('returns 400 for wrong current password', async () => {
+    const { signAccessToken } = await import('../auth/jwt')
+    const { hashPassword } = await import('../auth/password')
+    const token = await signAccessToken({ sub: 'player-1', username: 'alice' })
+    const passwordHash = await hashPassword('correct-password')
+    const db = createMockDb({
+      limit: vi.fn().mockResolvedValue([{ id: 'player-1', displayName: 'alice', passwordHash }]),
+    })
+    const req = createMockReqWithAuth(
+      'POST',
+      '/api/auth/change-password',
+      token,
+      JSON.stringify({ currentPassword: 'wrong-password', newPassword: 'newpassword123' }),
+    )
+    const res = createMockRes()
+    await handleAuthRequest(req, res, db)
+    expect(res._status).toBe(400)
+    expect(parseBody(res).code).toBe('WRONG_PASSWORD')
+    expect(parseBody(res).error).toBe('Current password is incorrect')
+  })
+
+  it('returns 200 on successful password change', async () => {
+    const { signAccessToken } = await import('../auth/jwt')
+    const { hashPassword } = await import('../auth/password')
+    const token = await signAccessToken({ sub: 'player-1', username: 'alice' })
+    const passwordHash = await hashPassword('oldpassword123')
+    const db = createMockDb({
+      limit: vi.fn().mockResolvedValue([{ id: 'player-1', displayName: 'alice', passwordHash }]),
+      set: vi.fn().mockReturnThis(),
+    })
+    const req = createMockReqWithAuth(
+      'POST',
+      '/api/auth/change-password',
+      token,
+      JSON.stringify({ currentPassword: 'oldpassword123', newPassword: 'newpassword456' }),
+    )
+    const res = createMockRes()
+    await handleAuthRequest(req, res, db)
+    expect(res._status).toBe(200)
+    expect(parseBody(res).message).toBe('Password changed successfully')
   })
 })
 
