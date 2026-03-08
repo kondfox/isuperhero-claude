@@ -76,7 +76,9 @@ When('I visit the activation link for the fresh user', async ({ page }) => {
     `/api/test/activation-token?email=${encodeURIComponent(freshUserEmail)}`,
   )
   const { token } = await tokenRes.json()
+  const activatePromise = page.waitForResponse((res) => res.url().includes('/api/auth/activate'))
   await page.goto(`/activate?token=${token}`)
+  await activatePromise
 })
 
 When('I visit the activation link for {string}', async ({ page }, email: string) => {
@@ -99,6 +101,14 @@ When('I visit the reset password link for {string}', async ({ page }, email: str
   )
   const { token } = await tokenRes.json()
   await page.goto(`/reset-password?token=${token}`)
+})
+
+// === Profile ===
+
+Given('a fresh user for password change', async ({ page }) => {
+  const suffix = Date.now().toString(36)
+  const username = `pw_change_${suffix}`
+  await loginViaApi(page, username)
 })
 
 // === Session management ===

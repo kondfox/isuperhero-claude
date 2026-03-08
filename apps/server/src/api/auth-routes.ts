@@ -381,7 +381,62 @@ async function handleMe(req: IncomingMessage, res: ServerResponse, db: Db): Prom
     id: player.id,
     username: player.displayName,
     email: player.email,
+    createdAt: player.createdAt,
   })
+}
+
+async function handleChangePassword(
+  req: IncomingMessage,
+  res: ServerResponse,
+  db: Db,
+): Promise<void> {
+  const payload = await extractAuthPayload(req)
+  if (!payload) {
+    errorResponse(res, 401, 'Unauthorized', 'UNAUTHORIZED')
+    return
+  }
+
+  const body = await readBody(req)
+  let parsed: { currentPassword: string; newPassword: string }
+  try {
+    parsed = JSON.parse(body)
+  } catch {
+    errorResponse(res, 400, 'Invalid request body', 'INVALID_BODY')
+    return
+  }
+
+  if (!parsed.currentPassword || !parsed.newPassword) {
+    errorResponse(res, 400, 'Current password and new password are required', 'MISSING_FIELDS')
+    return
+  }
+
+  if (parsed.newPassword.length < 8) {
+    errorResponse(res, 400, 'Password must be at least 8 characters', 'PASSWORD_TOO_SHORT')
+    return
+  }
+
+  const rows = await db.select().from(players).where(eq(players.id, payload.sub)).limit(1)
+  if (rows.length === 0) {
+    errorResponse(res, 401, 'Unauthorized', 'UNAUTHORIZED')
+    return
+  }
+
+  const player = rows[0]
+  if (!player.passwordHash) {
+    errorResponse(res, 400, 'Account has no password set', 'NO_PASSWORD')
+    return
+  }
+
+  const valid = await verifyPassword(parsed.currentPassword, player.passwordHash)
+  if (!valid) {
+    errorResponse(res, 400, 'Current password is incorrect', 'WRONG_PASSWORD')
+    return
+  }
+
+  const hashed = await hashPassword(parsed.newPassword)
+  await db.update(players).set({ passwordHash: hashed }).where(eq(players.id, player.id))
+
+  json(res, 200, { message: 'Password changed successfully' })
 }
 
 export async function handleAuthRequest(
@@ -418,6 +473,10 @@ export async function handleAuthRequest(
   }
   if (pathname === '/api/auth/me' && req.method === 'GET') {
     await handleMe(req, res, db)
+    return true
+  }
+  if (pathname === '/api/auth/change-password' && req.method === 'POST') {
+    await handleChangePassword(req, res, db)
     return true
   }
 

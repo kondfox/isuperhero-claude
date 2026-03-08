@@ -44,6 +44,9 @@ function LoggedInHome() {
         <Link to="/leaderboard" className={styles.link} aria-label="View leaderboard">
           Leaderboard
         </Link>
+        <Link to="/profile" className={styles.link}>
+          Profile
+        </Link>
         <button type="button" className={styles.logoutBtn} onClick={logout}>
           Log Out
         </button>
