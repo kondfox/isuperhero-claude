@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
+import { ProtectedRoute } from '../components/ProtectedRoute'
 import { AuthContext, type AuthContextValue } from '../context/AuthContext'
 import { RoomContext } from '../context/RoomContext'
 import type { GameSnapshot } from '../types/game-state'
@@ -213,7 +214,21 @@ describe('LobbyPage - Lobby view', () => {
 
 describe('LobbyPage - auth redirect', () => {
   it('redirects to login when not logged in', () => {
-    renderLobbyPage('create', {}, { isLoggedIn: false, user: null })
+    const authContext = { ...loggedInAuthContext, isLoggedIn: false, user: null }
+    render(
+      <AuthContext.Provider value={authContext}>
+        <RoomContext.Provider value={defaultRoomContext}>
+          <MemoryRouter initialEntries={['/lobby?mode=create']}>
+            <Routes>
+              <Route element={<ProtectedRoute />}>
+                <Route path="/lobby" element={<LobbyPage />} />
+              </Route>
+              <Route path="/login" element={<div>Login</div>} />
+            </Routes>
+          </MemoryRouter>
+        </RoomContext.Provider>
+      </AuthContext.Provider>,
+    )
     expect(screen.getByText('Login')).toBeInTheDocument()
   })
 })

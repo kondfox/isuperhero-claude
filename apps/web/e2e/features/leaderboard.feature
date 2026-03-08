@@ -13,6 +13,7 @@ Feature: Leaderboard Page
     And I should see a "Back to home" link
 
   Scenario: Leaderboard shows content after loading
-    Given I am on the leaderboard page
+    Given I am logged in as "leaderboard_user3"
+    And I am on the leaderboard page
     Then I should see the heading "Leaderboard"
     And the leaderboard should finish loading
